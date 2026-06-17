@@ -4,8 +4,11 @@ import { teams, groupMatches, groups } from '@/data/teams';
 import { getLiveData, GetLiveDataOutputType } from '@/lib/api';
 import MiniGroup from '@/components/MiniGroup';
 import InteractiveBracket from '@/components/InteractiveBracket';
-import LiveScores from '@/components/LiveScores';
+import MatchResults from '@/components/MatchResults';
+import { MatchResultsSkeleton } from '@/components/MatchResultsSkeleton';
 import LiveStandings from '@/components/LiveStandings';
+import { StandingsSkeleton } from '@/components/StandingsSkeleton';
+import PlayerStats, { Leader } from '@/components/PlayerStats';
 import PlayerStatsChart from '@/components/PlayerStatsChart';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
@@ -137,10 +140,7 @@ export default function HomePage() {
           <TabsContent value="live">
             {loading && !liveData ? (
               <div className="space-y-4">
-                <Skeleton className="h-8 w-48" />
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                  {[1,2,3,4].map(i => <Skeleton key={i} className="h-36 rounded-xl" />)}
-                </div>
+                <MatchResultsSkeleton />
               </div>
             ) : liveData ? (
               <div className="space-y-6">
@@ -156,7 +156,7 @@ export default function HomePage() {
                   </div>
                 )}
                 
-                <LiveScores matches={liveData.todayMatches} />
+                <MatchResults matches={liveData.todayMatches} />
                 {!liveData.hasError && liveData.todayMatches.length === 0 && (
                   <div className="text-center py-12 text-muted-foreground">
                     <p className="text-lg font-medium">No matches scheduled for today</p>
@@ -191,9 +191,7 @@ export default function HomePage() {
                 <LiveStandings standings={liveData.standings} />
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-                {[...Array(12)].map((_, i) => <Skeleton key={i} className="h-40 rounded-xl" />)}
-              </div>
+              <StandingsSkeleton />
             )}
           </TabsContent>
 
@@ -230,7 +228,40 @@ export default function HomePage() {
 
           {/* STATS TAB */}
           <TabsContent value="stats">
-            <PlayerStatsChart />
+            <div className="space-y-8 pb-12">
+              <PlayerStatsChart />
+              <PlayerStats 
+                leaders={[
+                  {
+                    category: 'goals',
+                    categoryLabel: 'Top Goalscorers',
+                    players: [
+                      { rank: 1, name: 'K. Mbappé', team: 'FRA', value: 5, teamLogo: 'https://a.espncdn.com/i/teamlogos/soccer/500/478.png' },
+                      { rank: 2, name: 'L. Messi', team: 'ARG', value: 4, teamLogo: 'https://a.espncdn.com/i/teamlogos/soccer/500/202.png' },
+                      { rank: 3, name: 'J. Bellingham', team: 'ENG', value: 3, teamLogo: 'https://a.espncdn.com/i/teamlogos/soccer/500/468.png' },
+                    ]
+                  },
+                  {
+                    category: 'assists',
+                    categoryLabel: 'Top Assists',
+                    players: [
+                      { rank: 1, name: 'K. De Bruyne', team: 'BEL', value: 4, teamLogo: 'https://a.espncdn.com/i/teamlogos/soccer/500/455.png' },
+                      { rank: 2, name: 'L. Messi', team: 'ARG', value: 3, teamLogo: 'https://a.espncdn.com/i/teamlogos/soccer/500/202.png' },
+                      { rank: 3, name: 'Vinícius Jr.', team: 'BRA', value: 3, teamLogo: 'https://a.espncdn.com/i/teamlogos/soccer/500/205.png' },
+                    ]
+                  },
+                  {
+                    category: 'saves',
+                    categoryLabel: 'Most Saves',
+                    players: [
+                      { rank: 1, name: 'E. Martínez', team: 'ARG', value: 18, teamLogo: 'https://a.espncdn.com/i/teamlogos/soccer/500/202.png' },
+                      { rank: 2, name: 'A. Becker', team: 'BRA', value: 16, teamLogo: 'https://a.espncdn.com/i/teamlogos/soccer/500/205.png' },
+                      { rank: 3, name: 'G. Donnarumma', team: 'ITA', value: 15, teamLogo: 'https://a.espncdn.com/i/teamlogos/soccer/500/108.png' },
+                    ]
+                  }
+                ]} 
+              />
+            </div>
           </TabsContent>
         </Tabs>
       </div>
