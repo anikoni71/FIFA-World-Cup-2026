@@ -52,10 +52,116 @@ export interface GetLiveDataOutputType {
   lastUpdated: string;
 }
 
+const standingsUrl = 'https://site.api.espn.com/apis/v2/sports/soccer/fifa.world/standings?season=2026';
+const scoreboardUrl = 'https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard';
+
 export async function getLiveData(options: LiveDataOptions): Promise<GetLiveDataOutputType> {
-  const res = await fetch('/api/live');
-  if (!res.ok) {
-    throw new Error('Failed to fetch live data from backend');
+  const [standingsRes, scoresRes, koRes] = await Promise.all([
+    fetch(standingsUrl),
+    fetch(scoreboardUrl),
+    fetch(`${scoreboardUrl}?dates=20260628-20260720&limit=100`).catch(() => null)
+  ]);
+
+  if (!standingsRes.ok || !scoresRes.ok) {
+    throw new Error('Failed to fetch live data from ESPN API');
   }
-  return await res.json() as GetLiveDataOutputType;
+
+  const standingsData = await standingsRes.json() as any;
+  const scoresData = await scoresRes.json() as any;
+  const koData = koRes ? await koRes.json() as any : { events: [] };
+
+  const groupLetters = ['A','B','C','D','E','F','G','H','I','J','K','L'];
+  const standings = (standingsData.children || []).map((group: any, idx: number) => {
+    const entries = group.standings?.entries || [];
+    return {
+      group: groupLetters[idx] || group.abbreviation?.replace('Group ', '') || `${idx+1}`,
+      teams: entries.map((entry: any) => {
+        const s = (name: string) => {
+          const stat = entry.stats?.find((st: any) => st.name === name);
+          return stat ? stat.value : 0;
+        };
+        const noteDesc = entry.note?.description || '';
+        let status = 'playing';
+        if (noteDesc.includes('Advance')) status = 'advance';
+        else if (noteDesc.includes('Best 8')) status = 'possible';
+        else if (noteDesc.includes('Eliminated')) status = 'eliminated';
+        
+        return {
+          code: entry.team?.abbreviation || '',
+          name: entry.team?.displayName || '',
+          rank: s('rank'),
+          played: s('gamesPlayed'),
+          wins: s('wins'),
+          draws: s('ties'),
+          losses: s('losses'),
+          goalsFor: s('pointsFor'),
+          goalsAgainst: s('pointsAgainst'),
+          goalDiff: s('pointDifferential'),
+          points: s('points'),
+          status,
+          logo: entry.team?.logos?.[0]?.href || '',
+        };
+      }),
+    };
+  });
+
+  function parseEvent(event: any) {
+    const comp = event.competitions?.[0];
+    const home = comp?.competitors?.find((c: any) => c.homeAway === 'home');
+    const away = comp?.competitors?.find((c: any) => c.homeAway === 'away');
+    let winner: string | undefined;
+    if (comp?.status?.type?.completed) {
+      if (home?.winner) winner = home?.team?.abbreviation;
+      else if (away?.winner) winner = away?.team?.abbreviation;
+      else winner = 'DRAW';
+    }
+    return { comp, home, away, winner };
+  }
+
+  const todayMatches = (scoresData.events || []).map((event: any) => {
+    const { comp, home, away, winner } = parseEvent(event);
+    const groupNote = comp?.altGameNote || '';
+    const groupMatch = groupNote.match(/Group ([A-L])/);
+    return {
+      id: event.id,
+      team1Code: home?.team?.abbreviation || '',
+      team1Name: home?.team?.displayName || '',
+      team1Score: home?.score || '0',
+      team1Logo: home?.team?.logo || '',
+      team2Code: away?.team?.abbreviation || '',
+      team2Name: away?.team?.displayName || '',
+      team2Score: away?.score || '0',
+      team2Logo: away?.team?.logo || '',
+      status: comp?.status?.type?.state || 'pre',
+      statusDetail: comp?.status?.type?.shortDetail || '',
+      venue: comp?.venue?.fullName || event.venue?.displayName || '',
+      group: groupMatch ? groupMatch[1] : '',
+      completed: comp?.status?.type?.completed || false,
+      winner,
+      startTime: event.date || comp?.date || '',
+    };
+  });
+
+  let knockoutResults = (koData.events || []).map((event: any) => {
+    const { comp, home, away, winner } = parseEvent(event);
+    return {
+      team1Code: home?.team?.abbreviation || '',
+      team2Code: away?.team?.abbreviation || '',
+      team1Score: home?.score || '0',
+      team2Score: away?.score || '0',
+      status: comp?.status?.type?.state || 'pre',
+      statusDetail: comp?.status?.type?.shortDetail || '',
+      completed: comp?.status?.type?.completed || false,
+      winner,
+      date: event.date || '',
+      venue: comp?.venue?.fullName || '',
+    };
+  });
+
+  return {
+    standings,
+    todayMatches,
+    knockoutResults,
+    lastUpdated: new Date().toISOString()
+  };
 }

@@ -6,9 +6,10 @@ import MiniGroup from '@/components/MiniGroup';
 import InteractiveBracket from '@/components/InteractiveBracket';
 import LiveScores from '@/components/LiveScores';
 import LiveStandings from '@/components/LiveStandings';
+import PlayerStatsChart from '@/components/PlayerStatsChart';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
-import { Trophy, Search, Globe, Zap, BarChart3, RefreshCw } from 'lucide-react';
+import { Trophy, Search, Globe, Zap, BarChart3, RefreshCw, LineChart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -114,7 +115,7 @@ export default function HomePage() {
       {/* Content */}
       <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4 pb-20 sm:pb-4">
         <Tabs defaultValue="live">
-          <TabsList className="fixed bottom-0 left-0 right-0 z-50 w-full grid grid-cols-4 bg-background/95 backdrop-blur border-t border-border p-1.5 sm:relative sm:w-auto sm:flex sm:bg-muted/50 sm:p-1 sm:rounded-lg sm:border-0 rounded-none h-[calc(64px+env(safe-area-inset-bottom))] pb-[calc(4px+env(safe-area-inset-bottom))] sm:pb-1 sm:h-auto sm:mb-4 group-data-horizontal/tabs:h-[calc(64px+env(safe-area-inset-bottom))] sm:group-data-horizontal/tabs:h-8 shadow-[0_-4px_16px_rgba(0,0,0,0.1)] sm:shadow-none select-none">
+          <TabsList className="fixed bottom-0 left-0 right-0 z-50 w-full grid grid-cols-5 bg-background/95 backdrop-blur border-t border-border p-1.5 sm:relative sm:w-auto sm:flex sm:bg-muted/50 sm:p-1 sm:rounded-lg sm:border-0 rounded-none h-[calc(64px+env(safe-area-inset-bottom))] pb-[calc(4px+env(safe-area-inset-bottom))] sm:pb-1 sm:h-auto sm:mb-4 group-data-horizontal/tabs:h-[calc(64px+env(safe-area-inset-bottom))] sm:group-data-horizontal/tabs:h-8 shadow-[0_-4px_16px_rgba(0,0,0,0.1)] sm:shadow-none select-none">
             <TabsTrigger value="live" className="flex-col gap-1 rounded-[10px] sm:flex-row sm:rounded-md text-[10px] sm:text-sm h-full sm:h-auto data-active:text-primary group-data-[variant=default]/tabs-list:data-active:bg-primary/10 sm:group-data-[variant=default]/tabs-list:data-active:bg-background sm:group-data-[variant=default]/tabs-list:data-active:text-foreground outline-none">
               <Zap className="!size-5 sm:!size-4" /> <span className="font-bold sm:font-medium">Live</span>
             </TabsTrigger>
@@ -126,6 +127,9 @@ export default function HomePage() {
             </TabsTrigger>
             <TabsTrigger value="groups" className="flex-col gap-1 rounded-[10px] sm:flex-row sm:rounded-md text-[10px] sm:text-sm h-full sm:h-auto data-active:text-primary group-data-[variant=default]/tabs-list:data-active:bg-primary/10 sm:group-data-[variant=default]/tabs-list:data-active:bg-background sm:group-data-[variant=default]/tabs-list:data-active:text-foreground outline-none">
               <Globe className="!size-5 sm:!size-4" /> <span className="font-bold sm:font-medium">Schedule</span>
+            </TabsTrigger>
+            <TabsTrigger value="stats" className="flex-col gap-1 rounded-[10px] sm:flex-row sm:rounded-md text-[10px] sm:text-sm h-full sm:h-auto data-active:text-primary group-data-[variant=default]/tabs-list:data-active:bg-primary/10 sm:group-data-[variant=default]/tabs-list:data-active:bg-background sm:group-data-[variant=default]/tabs-list:data-active:text-foreground outline-none">
+              <LineChart className="!size-5 sm:!size-4" /> <span className="font-bold sm:font-medium">Stats</span>
             </TabsTrigger>
           </TabsList>
 
@@ -197,6 +201,11 @@ export default function HomePage() {
                 <MiniGroup key={g} groupKey={g} teamCodes={groups[g]} matches={getGroupMatchData(g)} />
               ))}
             </div>
+          </TabsContent>
+
+          {/* STATS TAB */}
+          <TabsContent value="stats">
+            <PlayerStatsChart />
           </TabsContent>
         </Tabs>
       </div>
