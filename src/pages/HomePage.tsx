@@ -144,8 +144,20 @@ export default function HomePage() {
               </div>
             ) : liveData ? (
               <div className="space-y-6">
+                {liveData.hasError && (
+                  <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-xl flex items-center justify-between text-sm">
+                    <div>
+                      <p className="font-bold">Failed to load live updates</p>
+                      <p className="opacity-80">We couldn't connect to the sports data provider. Showing cached or empty data.</p>
+                    </div>
+                    <Button variant="outline" size="sm" onClick={fetchLive} className="h-8 border-destructive/20 hover:bg-destructive hover:text-destructive-foreground">
+                      Retry
+                    </Button>
+                  </div>
+                )}
+                
                 <LiveScores matches={liveData.todayMatches} />
-                {liveData.todayMatches.length === 0 && (
+                {!liveData.hasError && liveData.todayMatches.length === 0 && (
                   <div className="text-center py-12 text-muted-foreground">
                     <p className="text-lg font-medium">No matches scheduled for today</p>
                     <p className="text-sm">Check the Standings or Schedule tabs</p>
@@ -164,7 +176,20 @@ export default function HomePage() {
           {/* STANDINGS TAB */}
           <TabsContent value="standings">
             {liveData ? (
-              <LiveStandings standings={liveData.standings} />
+              <div className="space-y-4">
+                {liveData.hasError ? (
+                  <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-xl flex items-center justify-between text-sm">
+                    <div>
+                      <p className="font-bold">Failed to load standings</p>
+                      <p className="opacity-80">Network error fetching from provider.</p>
+                    </div>
+                    <Button variant="outline" size="sm" onClick={fetchLive} className="h-8 border-destructive/20 hover:bg-destructive hover:text-destructive-foreground">
+                      Retry
+                    </Button>
+                  </div>
+                ) : null}
+                <LiveStandings standings={liveData.standings} />
+              </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                 {[...Array(12)].map((_, i) => <Skeleton key={i} className="h-40 rounded-xl" />)}

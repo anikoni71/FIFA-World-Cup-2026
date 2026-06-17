@@ -50,25 +50,65 @@ export interface GetLiveDataOutputType {
     venue: string;
   }>;
   lastUpdated: string;
+  hasError?: boolean;
 }
 
 const standingsUrl = 'https://site.api.espn.com/apis/v2/sports/soccer/fifa.world/standings?season=2026';
 const scoreboardUrl = 'https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard';
 
 export async function getLiveData(options: LiveDataOptions): Promise<GetLiveDataOutputType> {
-  const [standingsRes, scoresRes, koRes] = await Promise.all([
-    fetch(standingsUrl),
-    fetch(scoreboardUrl),
-    fetch(`${scoreboardUrl}?dates=20260628-20260720&limit=100`).catch(() => null)
-  ]);
+  let standingsRes: Response | null = null;
+  let scoresRes: Response | null = null;
+  let koRes: Response | null = null;
 
-  if (!standingsRes.ok || !scoresRes.ok) {
-    throw new Error('Failed to fetch live data from ESPN API');
+  let hasError = false;
+
+  console.log("Fetching live data from ESPN APIs...");
+
+  try {
+    const results = await Promise.all([
+      fetch(standingsUrl).catch(e => { console.error('Network Error fetching standings:', e); hasError = true; return null; }),
+      fetch(scoreboardUrl).catch(e => { console.error('Network Error fetching scoreboard:', e); hasError = true; return null; }),
+      fetch(`${scoreboardUrl}?dates=20260628-20260720&limit=100`).catch(e => { console.error('Network Error fetching KO:', e); return null; }) // KO failure is non-fatal usually
+    ]);
+    standingsRes = results[0];
+    scoresRes = results[1];
+    koRes = results[2];
+  } catch (error) {
+    console.error("Critical error during API fetch Promise.all:", error);
+    hasError = true;
   }
 
-  const standingsData = await standingsRes.json() as any;
-  const scoresData = await scoresRes.json() as any;
-  const koData = koRes ? await koRes.json() as any : { events: [] };
+  if (!standingsRes || !standingsRes.ok) {
+    console.warn(`Standings fetch failed. Status: ${standingsRes?.status} ${standingsRes?.statusText}. URL: ${standingsUrl}`);
+    hasError = true;
+  }
+  if (!scoresRes || !scoresRes.ok) {
+    console.warn(`Scoreboard fetch failed. Status: ${scoresRes?.status} ${scoresRes?.statusText}. URL: ${scoreboardUrl}`);
+    hasError = true;
+  }
+
+  let standingsData: any = { children: [] };
+  let scoresData: any = { events: [] };
+  let koData: any = { events: [] };
+
+  try {
+    if (standingsRes && standingsRes.ok) standingsData = await standingsRes.json();
+  } catch (e) {
+    console.error("Error parsing standings JSON:", e);
+  }
+
+  try {
+    if (scoresRes && scoresRes.ok) scoresData = await scoresRes.json();
+  } catch (e) {
+    console.error("Error parsing scoreboard JSON:", e);
+  }
+
+  try {
+    if (koRes && koRes.ok) koData = await koRes.json();
+  } catch (e) {
+    console.error("Error parsing KO JSON:", e);
+  }
 
   const groupLetters = ['A','B','C','D','E','F','G','H','I','J','K','L'];
   const standings = (standingsData.children || []).map((group: any, idx: number) => {
@@ -162,6 +202,7 @@ export async function getLiveData(options: LiveDataOptions): Promise<GetLiveData
     standings,
     todayMatches,
     knockoutResults,
-    lastUpdated: new Date().toISOString()
+    lastUpdated: new Date().toISOString(),
+    hasError
   };
 }
