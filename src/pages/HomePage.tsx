@@ -57,7 +57,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
-      <div className="bg-gradient-to-r from-secondary/20 via-primary/15 to-secondary/20 border-b border-border">
+      <div className="bg-gradient-to-r from-secondary/20 via-primary/15 to-secondary/20 border-b border-border sticky top-0 z-40 backdrop-blur supports-[backdrop-filter]:bg-background/80 pt-[env(safe-area-inset-top)]">
         <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4 space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 sm:gap-3">
@@ -112,20 +112,20 @@ export default function HomePage() {
       )}
 
       {/* Content */}
-      <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
+      <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4 pb-20 sm:pb-4">
         <Tabs defaultValue="live">
-          <TabsList className="mb-3 sm:mb-4 w-full sm:w-auto grid grid-cols-4 sm:flex bg-muted/50 p-1">
-            <TabsTrigger value="live" className="text-xs sm:text-sm gap-1 sm:gap-1.5">
-              <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Live
+          <TabsList className="fixed bottom-0 left-0 right-0 z-50 w-full grid grid-cols-4 bg-background/95 backdrop-blur border-t border-border p-1.5 sm:relative sm:w-auto sm:flex sm:bg-muted/50 sm:p-1 sm:rounded-lg sm:border-0 rounded-none h-[calc(64px+env(safe-area-inset-bottom))] pb-[calc(4px+env(safe-area-inset-bottom))] sm:pb-1 sm:h-auto sm:mb-4 group-data-horizontal/tabs:h-[calc(64px+env(safe-area-inset-bottom))] sm:group-data-horizontal/tabs:h-8 shadow-[0_-4px_16px_rgba(0,0,0,0.1)] sm:shadow-none select-none">
+            <TabsTrigger value="live" className="flex-col gap-1 rounded-[10px] sm:flex-row sm:rounded-md text-[10px] sm:text-sm h-full sm:h-auto data-active:text-primary group-data-[variant=default]/tabs-list:data-active:bg-primary/10 sm:group-data-[variant=default]/tabs-list:data-active:bg-background sm:group-data-[variant=default]/tabs-list:data-active:text-foreground outline-none">
+              <Zap className="!size-5 sm:!size-4" /> <span className="font-bold sm:font-medium">Live</span>
             </TabsTrigger>
-            <TabsTrigger value="standings" className="text-xs sm:text-sm gap-1 sm:gap-1.5">
-              <BarChart3 className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Standings
+            <TabsTrigger value="standings" className="flex-col gap-1 rounded-[10px] sm:flex-row sm:rounded-md text-[10px] sm:text-sm h-full sm:h-auto data-active:text-primary group-data-[variant=default]/tabs-list:data-active:bg-primary/10 sm:group-data-[variant=default]/tabs-list:data-active:bg-background sm:group-data-[variant=default]/tabs-list:data-active:text-foreground outline-none">
+              <BarChart3 className="!size-5 sm:!size-4" /> <span className="font-bold sm:font-medium">Standings</span>
             </TabsTrigger>
-            <TabsTrigger value="bracket" className="text-xs sm:text-sm gap-1 sm:gap-1.5">
-              <Trophy className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Bracket
+            <TabsTrigger value="bracket" className="flex-col gap-1 rounded-[10px] sm:flex-row sm:rounded-md text-[10px] sm:text-sm h-full sm:h-auto data-active:text-primary group-data-[variant=default]/tabs-list:data-active:bg-primary/10 sm:group-data-[variant=default]/tabs-list:data-active:bg-background sm:group-data-[variant=default]/tabs-list:data-active:text-foreground outline-none">
+              <Trophy className="!size-5 sm:!size-4" /> <span className="font-bold sm:font-medium">Bracket</span>
             </TabsTrigger>
-            <TabsTrigger value="groups" className="text-xs sm:text-sm gap-1 sm:gap-1.5">
-              <Globe className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Schedule
+            <TabsTrigger value="groups" className="flex-col gap-1 rounded-[10px] sm:flex-row sm:rounded-md text-[10px] sm:text-sm h-full sm:h-auto data-active:text-primary group-data-[variant=default]/tabs-list:data-active:bg-primary/10 sm:group-data-[variant=default]/tabs-list:data-active:bg-background sm:group-data-[variant=default]/tabs-list:data-active:text-foreground outline-none">
+              <Globe className="!size-5 sm:!size-4" /> <span className="font-bold sm:font-medium">Schedule</span>
             </TabsTrigger>
           </TabsList>
 

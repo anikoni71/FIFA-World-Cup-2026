@@ -34,7 +34,7 @@ export default function TeamPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
-      <div className="bg-gradient-to-br from-primary/15 via-secondary/10 to-background border-b border-border">
+      <div className="bg-gradient-to-br from-primary/15 via-secondary/10 to-background border-b border-border sticky top-0 z-40 backdrop-blur supports-[backdrop-filter]:bg-background/80 pt-[env(safe-area-inset-top)]">
         <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
           <Button variant="ghost" size="sm" onClick={() => navigate('/')} className="mb-3">
             <ArrowLeft className="w-4 h-4 mr-1" /> Back
@@ -61,7 +61,7 @@ export default function TeamPage() {
         </div>
       </div>
 
-      <div className="container mx-auto px-3 sm:px-4 py-5 sm:py-8 space-y-6 sm:space-y-8">
+      <div className="container mx-auto px-3 sm:px-4 py-5 sm:py-8 pb-[calc(2rem+env(safe-area-inset-bottom))] space-y-6 sm:space-y-8">
         {/* Group opponents */}
         <div>
           <h2 className="text-base sm:text-lg font-bold mb-3">Group {team.group} Opponents</h2>

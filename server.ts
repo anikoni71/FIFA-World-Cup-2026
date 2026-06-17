@@ -12,8 +12,16 @@ async function startServer() {
   // API constraints for backend server
   app.get("/api/live", async (req, res) => {
     try {
-      const standingsRes = await fetch(standingsUrl);
+      const ObjectAny = Object as any;
+      const [standingsRes, scoresRes, koRes] = await Promise.all([
+        fetch(standingsUrl),
+        fetch(scoreboardUrl),
+        fetch(`${scoreboardUrl}?dates=20260628-20260720&limit=100`).catch(() => null)
+      ]);
+
       const standingsData = await standingsRes.json() as any;
+      const scoresData = await scoresRes.json() as any;
+      const koData = koRes ? await koRes.json() as any : { events: [] };
 
       const groupLetters = ['A','B','C','D','E','F','G','H','I','J','K','L'];
       const standings = (standingsData.children || []).map((group: any, idx: number) => {
@@ -49,9 +57,6 @@ async function startServer() {
           }),
         };
       });
-
-      const scoresRes = await fetch(scoreboardUrl);
-      const scoresData = await scoresRes.json() as any;
 
       function parseEvent(event: any) {
         const comp = event.competitions?.[0];
@@ -90,28 +95,21 @@ async function startServer() {
         };
       });
 
-      let knockoutResults: any[] = [];
-      try {
-        const koRes = await fetch(`${scoreboardUrl}?dates=20260628-20260720&limit=100`);
-        const koData = await koRes.json() as any;
-        knockoutResults = (koData.events || []).map((event: any) => {
-          const { comp, home, away, winner } = parseEvent(event);
-          return {
-            team1Code: home?.team?.abbreviation || '',
-            team2Code: away?.team?.abbreviation || '',
-            team1Score: home?.score || '0',
-            team2Score: away?.score || '0',
-            status: comp?.status?.type?.state || 'pre',
-            statusDetail: comp?.status?.type?.shortDetail || '',
-            completed: comp?.status?.type?.completed || false,
-            winner,
-            date: event.date || '',
-            venue: comp?.venue?.fullName || '',
-          };
-        });
-      } catch {
-        // No knockout data yet
-      }
+      let knockoutResults = (koData.events || []).map((event: any) => {
+        const { comp, home, away, winner } = parseEvent(event);
+        return {
+          team1Code: home?.team?.abbreviation || '',
+          team2Code: away?.team?.abbreviation || '',
+          team1Score: home?.score || '0',
+          team2Score: away?.score || '0',
+          status: comp?.status?.type?.state || 'pre',
+          statusDetail: comp?.status?.type?.shortDetail || '',
+          completed: comp?.status?.type?.completed || false,
+          winner,
+          date: event.date || '',
+          venue: comp?.venue?.fullName || '',
+        };
+      });
 
       res.json({
         standings,
