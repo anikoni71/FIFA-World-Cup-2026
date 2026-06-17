@@ -1,0 +1,6 @@
+{
+  "name": "Live World Cup 2026 App",
+  "description": "Live standings, scores, and fixture bracket for the 2026 FIFA World Cup.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
