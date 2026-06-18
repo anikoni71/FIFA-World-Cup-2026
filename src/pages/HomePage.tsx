@@ -20,9 +20,41 @@ const leftGroups = ['A', 'B', 'C', 'D', 'E', 'F'];
 const rightGroups = ['G', 'H', 'I', 'J', 'K', 'L'];
 
 function getGroupMatchData(g: string) {
+  const parseAndFormatBDT = (dateStr: string, timeStr: string) => {
+    try {
+      const timeRe = timeStr.match(/(\d+)(?::(\d+))?\s*(AM|PM)/i);
+      if (!timeRe) return `${timeStr} • ${dateStr}`;
+      const [_, h, m, ampm] = timeRe;
+      const dateTry = `${dateStr}, 2026 ${h}:${m || '00'} ${ampm} EDT`;
+      const d = new Date(dateTry);
+      if (isNaN(d.getTime())) return `${timeStr} • ${dateStr}`;
+      
+      const formatted = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'Asia/Dhaka',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+        month: 'short',
+        day: 'numeric'
+      }).formatToParts(d);
+      
+      let hour = '', minute = '', dayPeriod = '', month = '', day = '';
+      for (const part of formatted) {
+        if (part.type === 'hour') hour = part.value;
+        if (part.type === 'minute') minute = part.value;
+        if (part.type === 'dayPeriod') dayPeriod = part.value;
+        if (part.type === 'month') month = part.value;
+        if (part.type === 'day') day = part.value;
+      }
+      return `${hour}:${minute} ${dayPeriod} BDT • ${month} ${day}`;
+    } catch {
+      return `${timeStr} • ${dateStr}`;
+    }
+  };
+
   return groupMatches
     .filter(m => m.group === g)
-    .map(m => ({ t1: m.team1, t2: m.team2, date: m.date }));
+    .map(m => ({ t1: m.team1, t2: m.team2, date: parseAndFormatBDT(m.date, m.time) }));
 }
 
 export default function HomePage() {
@@ -47,7 +79,7 @@ export default function HomePage() {
 
   useEffect(() => {
     fetchLive();
-    const interval = setInterval(fetchLive, 60000); // refresh every 60s
+    const interval = setInterval(fetchLive, 4000); // refresh every 4s
     return () => clearInterval(interval);
   }, [fetchLive]);
 
@@ -110,7 +142,7 @@ export default function HomePage() {
         <div className="container mx-auto px-3 sm:px-4 pt-2">
           <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
             <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-            Live — auto-refreshes every 60s • Last: {lastRefresh.toLocaleTimeString()}
+            Live — auto-refreshes every 4s • Last: {lastRefresh.toLocaleTimeString()}
           </div>
         </div>
       )}

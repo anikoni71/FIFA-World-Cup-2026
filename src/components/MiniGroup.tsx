@@ -30,7 +30,7 @@ export default function MiniGroup({ groupKey, teamCodes, matches }: MiniGroupPro
               <span>{teams[m.t2]?.flag}</span>
               <span>{m.t2}</span>
             </button>
-            <span className="text-muted-foreground ml-auto truncate max-w-[60px]">{m.date}</span>
+            <span className="text-muted-foreground ml-auto whitespace-nowrap shrink-0 text-[8.5px]">{m.date}</span>
           </div>
         ))}
       </div>
