@@ -1,9 +1,11 @@
 import { GetLiveDataOutputType } from '@/lib/api';
 import { knockoutMatches, teams } from '@/data/teams';
 import { resolveBracket } from '@/lib/bracketResolver';
-import { Trophy } from 'lucide-react';
+import { Trophy, ZoomIn, ZoomOut, Maximize } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { motion, useAnimation, useMotionValue } from 'motion/react';
+import { useRef, useEffect, useState } from 'react';
 
 // Helper for tailwind class merging
 function cn(...inputs: ClassValue[]) {
@@ -17,6 +19,43 @@ interface Props {
 
 export default function InteractiveBracket({ standings, knockoutResults }: Props) {
   const { resolveNode, matchWinners } = resolveBracket(standings, knockoutResults);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const controls = useAnimation();
+  const [scale, setScale] = useState(1);
+  const scaleMotion = useMotionValue(1);
+
+  const handleZoom = (direction: 'in' | 'out' | 'reset') => {
+    let newScale = scale;
+    if (direction === 'in') newScale = Math.min(scale + 0.2, 2);
+    else if (direction === 'out') newScale = Math.max(scale - 0.2, 0.5);
+    else {
+      newScale = 1;
+      controls.start({ x: 0, y: 0 });
+    }
+    
+    setScale(newScale);
+    scaleMotion.set(newScale);
+  };
+
+  useEffect(() => {
+    const handleWheel = (e: WheelEvent) => {
+      if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+        const delta = e.deltaY * -0.01;
+        const newScale = Math.min(Math.max(scale + delta, 0.5), 2.5);
+        setScale(newScale);
+        scaleMotion.set(newScale);
+      }
+    };
+    
+    const element = containerRef.current;
+    if (element) {
+      element.addEventListener('wheel', handleWheel, { passive: false });
+    }
+    return () => {
+      if (element) element.removeEventListener('wheel', handleWheel);
+    };
+  }, [scale, scaleMotion]);
 
   const getTeamLabel = (teamCode: string) => {
     return teams[teamCode]?.name || teamCode;
@@ -24,6 +63,40 @@ export default function InteractiveBracket({ standings, knockoutResults }: Props
 
   const getTeamFlag = (teamCode: string) => {
     return teams[teamCode]?.flag || ' ';
+  };
+
+  const parseAndFormatBDT = (dateStr: string, timeStr: string) => {
+    try {
+      const timeRe = timeStr.match(/(\d+)(?::(\d+))?\s*(AM|PM)/i);
+      if (!timeRe) {
+        return timeStr && !timeStr.toLowerCase().includes('tbd') ? `${timeStr} • ${dateStr}` : `Time TBD • ${dateStr}`;
+      }
+      const [_, h, m, ampm] = timeRe;
+      const dateTry = `${dateStr}, 2026 ${h}:${m || '00'} ${ampm} EDT`;
+      const d = new Date(dateTry);
+      if (isNaN(d.getTime())) return `Time TBD • ${dateStr}`;
+      
+      const formatted = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'Asia/Dhaka',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+        month: 'short',
+        day: 'numeric'
+      }).formatToParts(d);
+      
+      let hour = '', minute = '', dayPeriod = '', month = '', day = '';
+      for (const part of formatted) {
+        if (part.type === 'hour') hour = part.value;
+        if (part.type === 'minute') minute = part.value;
+        if (part.type === 'dayPeriod') dayPeriod = part.value;
+        if (part.type === 'month') month = part.value;
+        if (part.type === 'day') day = part.value;
+      }
+      return `${hour}:${minute} ${dayPeriod} BDT • ${day} ${month}`;
+    } catch {
+      return `Time TBD • ${dateStr}`;
+    }
   };
 
   const getScore = (mId: string, teamCode: string) => {
@@ -86,7 +159,7 @@ export default function InteractiveBracket({ standings, knockoutResults }: Props
         {/* Date and Venue info */}
         {match.date && (
           <div className="text-[8px] text-muted-foreground mt-1 truncate">
-            {match.date} • {match.time} • {match.venue}
+            {parseAndFormatBDT(match.date, match.time)} • {match.venue}
           </div>
         )}
       </div>
@@ -103,43 +176,66 @@ export default function InteractiveBracket({ standings, knockoutResults }: Props
   );
 
   return (
-    <div className="w-full bg-[#111318]/5 rounded-xl border border-border/20 p-4 sm:p-6 overflow-x-auto">
-      <div className="flex justify-between items-center mb-6">
+    <div className="w-full bg-[#111318] rounded-xl border border-border/20 p-4 sm:p-6 overflow-hidden relative" ref={containerRef}>
+      <div className="flex justify-between items-center mb-6 relative z-20">
         <h2 className="text-lg font-bold">Automated Bracket — Live from Standings</h2>
-        <div className="text-[10px] flex items-center gap-1.5 text-muted-foreground bg-muted/30 px-3 py-1 rounded-full">
-          <span className="w-1.5 h-1.5 rounded-full border border-current" /> Auto-updates from real-time group standings
+        <div className="flex items-center gap-3">
+          <div className="hidden sm:flex text-[10px] items-center gap-1.5 text-muted-foreground bg-muted/30 px-3 py-1.5 rounded-full">
+            <span className="w-1.5 h-1.5 rounded-full border border-current" /> Auto-updates from real-time standings
+          </div>
+          <div className="flex items-center gap-1 bg-card border border-border rounded-lg p-1 shadow-sm">
+            <button onClick={() => handleZoom('out')} className="p-1.5 hover:bg-muted rounded text-muted-foreground hover:text-foreground transition-colors" title="Zoom Out">
+              <ZoomOut className="w-4 h-4" />
+            </button>
+            <button onClick={() => handleZoom('reset')} className="p-1.5 hover:bg-muted rounded text-muted-foreground hover:text-foreground transition-colors" title="Reset View">
+              <Maximize className="w-4 h-4" />
+            </button>
+            <button onClick={() => handleZoom('in')} className="p-1.5 hover:bg-muted rounded text-muted-foreground hover:text-foreground transition-colors" title="Zoom In">
+              <ZoomIn className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </div>
       
-      <div className="flex gap-4 sm:gap-6 min-w-[1200px] pb-12 relative items-stretch">
-        {/* LEFT SIDE */}
-        <Column matchIds={['R32-1', 'R32-2', 'R32-3', 'R32-4', 'R32-5', 'R32-6', 'R32-7', 'R32-8']} align="around" title="ROUND OF 32" />
-        <Column matchIds={['R16-1', 'R16-2', 'R16-3', 'R16-4']} align="around" title="ROUND OF 16" />
-        <Column matchIds={['QF-1', 'QF-2']} align="around" title="QUARTER-FINAL" />
-        <Column matchIds={['SF-1']} align="center" title="SEMI-FINAL" />
+      {/* Zoom hint for desktop users */}
+      <div className="absolute bottom-4 left-4 z-20 hidden md:block text-[10px] text-muted-foreground bg-background/80 backdrop-blur px-2 py-1 rounded border border-border/50">
+        Ctrl + Scroll to zoom, drag to pan
+      </div>
 
-        {/* CENTER FINAL */}
-        <div className="flex flex-col justify-center items-center gap-4 min-w-[180px] z-10">
-          <div className="flex flex-col items-center">
-            <Trophy className="w-8 h-8 text-accent mb-2" />
-            <span className="font-black text-accent tracking-widest text-sm">FINAL</span>
+      <div className="w-full h-[600px] overflow-hidden cursor-grab active:cursor-grabbing rounded-lg border border-border/10 bg-[#0c0d12]">
+        <motion.div 
+          drag
+          dragConstraints={containerRef}
+          animate={controls}
+          style={{ scale: scaleMotion, originX: 0.5, originY: 0.5 }}
+          className="flex gap-4 sm:gap-6 min-w-[1200px] h-full items-center justify-center relative p-12"
+        >
+          {/* LEFT SIDE */}
+          <Column matchIds={['R32-1', 'R32-2', 'R32-3', 'R32-4', 'R32-5', 'R32-6', 'R32-7', 'R32-8']} align="around" title="ROUND OF 32" />
+          <Column matchIds={['R16-1', 'R16-2', 'R16-3', 'R16-4']} align="around" title="ROUND OF 16" />
+          <Column matchIds={['QF-1', 'QF-2']} align="around" title="QUARTER-FINAL" />
+          <Column matchIds={['SF-1']} align="center" title="SEMI-FINAL" />
+
+          {/* CENTER FINAL */}
+          <div className="flex flex-col justify-center items-center gap-4 min-w-[180px] z-10 shrink-0">
+            <div className="flex flex-col items-center">
+              <Trophy className="w-8 h-8 text-accent mb-2 drop-shadow-[0_0_8px_rgba(234,179,8,0.5)]" />
+              <span className="font-black text-accent tracking-widest text-sm drop-shadow">FINAL</span>
+            </div>
+            <MatchBox mId="F" stageName="FINAL" />
+            
+            <div className="mt-8 relative origin-top">
+               <MatchBox mId="TP" stageName="THIRD PLACE PLAY-OFF" />
+            </div>
           </div>
-          <MatchBox mId="F" stageName="FINAL" />
-          
-          <div className="mt-8 relative origin-top">
-             <MatchBox mId="TP" stageName="THIRD PLACE PLAY-OFF" />
-          </div>
-        </div>
 
-        {/* RIGHT SIDE */}
-        <Column matchIds={['SF-2']} reverse align="center" title="SEMI-FINAL" />
-        <Column matchIds={['QF-3', 'QF-4']} reverse align="around" title="QUARTER-FINAL" />
-        <Column matchIds={['R16-5', 'R16-6', 'R16-7', 'R16-8']} reverse align="around" title="ROUND OF 16" />
-        <Column matchIds={['R32-9', 'R32-10', 'R32-11', 'R32-12', 'R32-13', 'R32-14', 'R32-15', 'R32-16']} reverse align="around" title="ROUND OF 32" />
+          {/* RIGHT SIDE */}
+          <Column matchIds={['SF-2']} reverse align="center" title="SEMI-FINAL" />
+          <Column matchIds={['QF-3', 'QF-4']} reverse align="around" title="QUARTER-FINAL" />
+          <Column matchIds={['R16-5', 'R16-6', 'R16-7', 'R16-8']} reverse align="around" title="ROUND OF 16" />
+          <Column matchIds={['R32-9', 'R32-10', 'R32-11', 'R32-12', 'R32-13', 'R32-14', 'R32-15', 'R32-16']} reverse align="around" title="ROUND OF 32" />
 
-        {/* Background connection lines could go here via robust SVGs, 
-            but CSS borders + absolute positioning scales better. 
-            For now, placing flex items closely simulates the bracket visual flow without complex SVGs. */}
+        </motion.div>
       </div>
     </div>
   );

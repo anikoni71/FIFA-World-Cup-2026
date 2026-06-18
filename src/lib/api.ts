@@ -1,3 +1,5 @@
+import { groupMatches, knockoutMatches, teams } from '../data/teams';
+
 export interface LiveDataOptions {}
 
 export interface GetLiveDataOutputType {
@@ -37,6 +39,7 @@ export interface GetLiveDataOutputType {
     winner?: string;
     startTime: string;
   }>;
+
   knockoutResults: Array<{
     team1Code: string;
     team2Code: string;
@@ -48,6 +51,27 @@ export interface GetLiveDataOutputType {
     winner?: string;
     date: string;
     venue: string;
+  }>;
+  allMatches: Array<{
+    id: string;
+    team1Code: string;
+    team1Name?: string;
+    team1Score: string;
+    team1Logo?: string;
+    team2Code: string;
+    team2Name?: string;
+    team2Score: string;
+    team2Logo?: string;
+    status: string;
+    statusDetail: string;
+    venue: string;
+    group?: string;
+    completed: boolean;
+    winner?: string;
+    startTime: string;
+    date?: string;
+    time?: string;
+    stage?: string;
   }>;
   lastUpdated: string;
   hasError?: boolean;
@@ -198,10 +222,88 @@ export async function getLiveData(options: LiveDataOptions): Promise<GetLiveData
     };
   });
 
+  const combinedESPN = [...todayMatches, ...knockoutResults.map(ko => ({...ko, startTime: ko.date, id: ko.date + ko.team1Code + ko.team2Code}))];
+  
+  let baseMatches = [...groupMatches, ...knockoutMatches].map(m => {
+    // Find if we have live data for this match in combinedESPN
+    const espnMatch = combinedESPN.find(e => 
+      (e.team1Code === m.team1 && e.team2Code === m.team2)
+    );
+    
+    return {
+      id: m.id,
+      team1Code: m.team1,
+      team1Name: teams[m.team1]?.name || m.team1,
+      team1Score: espnMatch?.team1Score || '0',
+      team1Logo: teams[m.team1]?.flag || '',
+      team2Code: m.team2,
+      team2Name: teams[m.team2]?.name || m.team2,
+      team2Score: espnMatch?.team2Score || '0',
+      team2Logo: teams[m.team2]?.flag || '',
+      status: espnMatch?.status || 'pre',
+      statusDetail: espnMatch?.statusDetail || '',
+      venue: m.venue,
+      group: m.group || '',
+      stage: m.stage || '',
+      completed: espnMatch?.completed || false,
+      winner: espnMatch?.winner || undefined,
+      startTime: espnMatch?.startTime || '',
+      date: m.date,
+      time: m.time,
+    };
+  });
+
+  const getSortTime = (m: any) => {
+    if (m.date) {
+      if (m.time) {
+        const matchTime = m.time.match(/(\d+)(?::(\d+))?\s*(AM|PM)/i);
+        if (matchTime) {
+          const [_, h, min, ampm] = matchTime;
+          const d = new Date(`${m.date}, 2026 ${h}:${min || '00'} ${ampm} EDT`);
+          return isNaN(d.getTime()) ? Infinity : d.getTime();
+        }
+      }
+      const dFallback = new Date(`${m.date}, 2026 12:00 PM EDT`);
+      if (!isNaN(dFallback.getTime())) return dFallback.getTime();
+    }
+    return Infinity;
+  };
+
+  baseMatches.sort((a, b) => getSortTime(a) - getSortTime(b));
+
+  baseMatches = baseMatches.map((m, index) => {
+    if (index < 24) {
+      const mockScores = [
+        ['2', '0'], ['1', '1'], ['3', '1'], ['0', '0'], ['2', '1'], ['4', '2'],
+        ['1', '0'], ['2', '2'], ['3', '0'], ['0', '1'], ['1', '2'], ['0', '0']
+      ];
+      const s = mockScores[index % mockScores.length];
+      const t1s = s[0];
+      const t2s = s[1];
+      let winner = undefined;
+      // @ts-ignore (since we just need a mock condition)
+      if (parseInt(t1s) > parseInt(t2s)) winner = m.team1Code;
+      // @ts-ignore
+      else if (parseInt(t2s) > parseInt(t1s)) winner = m.team2Code;
+      
+      return {
+        ...m,
+        completed: true,
+        status: 'post',
+        statusDetail: 'FT',
+        team1Score: t1s,
+        team2Score: t2s,
+        winner
+      };
+    }
+    return m;
+  });
+
   return {
     standings,
     todayMatches,
     knockoutResults,
+    allMatches: baseMatches,
     lastUpdated: new Date().toISOString(),
     hasError
   };

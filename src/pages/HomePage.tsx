@@ -12,7 +12,7 @@ import PlayerStats, { Leader } from '@/components/PlayerStats';
 import PlayerStatsChart from '@/components/PlayerStatsChart';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
-import { Trophy, Search, Globe, Zap, BarChart3, RefreshCw, LineChart } from 'lucide-react';
+import { Trophy, Search, Globe, Zap, BarChart3, RefreshCw, LineChart, CalendarDays } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -23,11 +23,13 @@ function getGroupMatchData(g: string) {
   const parseAndFormatBDT = (dateStr: string, timeStr: string) => {
     try {
       const timeRe = timeStr.match(/(\d+)(?::(\d+))?\s*(AM|PM)/i);
-      if (!timeRe) return `${timeStr} • ${dateStr}`;
+      if (!timeRe) {
+        return timeStr && !timeStr.toLowerCase().includes('tbd') ? `${timeStr} • ${dateStr}` : `Time TBD • ${dateStr}`;
+      }
       const [_, h, m, ampm] = timeRe;
       const dateTry = `${dateStr}, 2026 ${h}:${m || '00'} ${ampm} EDT`;
       const d = new Date(dateTry);
-      if (isNaN(d.getTime())) return `${timeStr} • ${dateStr}`;
+      if (isNaN(d.getTime())) return `Time TBD • ${dateStr}`;
       
       const formatted = new Intl.DateTimeFormat('en-US', {
         timeZone: 'Asia/Dhaka',
@@ -46,9 +48,9 @@ function getGroupMatchData(g: string) {
         if (part.type === 'month') month = part.value;
         if (part.type === 'day') day = part.value;
       }
-      return `${hour}:${minute} ${dayPeriod} BDT • ${month} ${day}`;
+      return `${hour}:${minute} ${dayPeriod} BDT • ${day} ${month}`;
     } catch {
-      return `${timeStr} • ${dateStr}`;
+      return `Time TBD • ${dateStr}`;
     }
   };
 
@@ -79,7 +81,7 @@ export default function HomePage() {
 
   useEffect(() => {
     fetchLive();
-    const interval = setInterval(fetchLive, 4000); // refresh every 4s
+    const interval = setInterval(fetchLive, 5000); // refresh every 5s
     return () => clearInterval(interval);
   }, [fetchLive]);
 
@@ -142,7 +144,7 @@ export default function HomePage() {
         <div className="container mx-auto px-3 sm:px-4 pt-2">
           <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
             <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-            Live — auto-refreshes every 4s • Last: {lastRefresh.toLocaleTimeString()}
+            Live — auto-refreshes every 5s • Last: {lastRefresh.toLocaleTimeString()}
           </div>
         </div>
       )}
@@ -165,6 +167,9 @@ export default function HomePage() {
             </TabsTrigger>
             <TabsTrigger value="stats" className="flex-col gap-1 rounded-[10px] sm:flex-row sm:rounded-md text-[10px] sm:text-sm h-full sm:h-auto data-active:text-primary group-data-[variant=default]/tabs-list:data-active:bg-primary/10 sm:group-data-[variant=default]/tabs-list:data-active:bg-background sm:group-data-[variant=default]/tabs-list:data-active:text-foreground outline-none">
               <LineChart className="!size-5 sm:!size-4" /> <span className="font-bold sm:font-medium">Stats</span>
+            </TabsTrigger>
+            <TabsTrigger value="results" className="flex-col gap-1 rounded-[10px] sm:flex-row sm:rounded-md text-[10px] sm:text-sm h-full sm:h-auto data-active:text-primary group-data-[variant=default]/tabs-list:data-active:bg-primary/10 sm:group-data-[variant=default]/tabs-list:data-active:bg-background sm:group-data-[variant=default]/tabs-list:data-active:text-foreground outline-none">
+              <CalendarDays className="!size-5 sm:!size-4" /> <span className="font-bold sm:font-medium">Results Report</span>
             </TabsTrigger>
           </TabsList>
 
@@ -229,24 +234,7 @@ export default function HomePage() {
 
           {/* BRACKET TAB */}
           <TabsContent value="bracket">
-            <div className="hidden xl:grid xl:grid-cols-[180px_1fr_180px] gap-3">
-              <div className="space-y-2">
-                {leftGroups.map(g => (
-                  <MiniGroup key={g} groupKey={g} teamCodes={groups[g]} matches={getGroupMatchData(g)} />
-                ))}
-              </div>
-              <div className="overflow-x-auto">
-                <InteractiveBracket standings={liveData?.standings || []} knockoutResults={liveData?.knockoutResults || []} />
-              </div>
-              <div className="space-y-2">
-                {rightGroups.map(g => (
-                  <MiniGroup key={g} groupKey={g} teamCodes={groups[g]} matches={getGroupMatchData(g)} />
-                ))}
-              </div>
-            </div>
-            <div className="xl:hidden space-y-6">
-              <InteractiveBracket standings={liveData?.standings || []} knockoutResults={liveData?.knockoutResults || []} />
-            </div>
+            <InteractiveBracket standings={liveData?.standings || []} knockoutResults={liveData?.knockoutResults || []} />
           </TabsContent>
 
           {/* SCHEDULE TAB */}
@@ -294,6 +282,19 @@ export default function HomePage() {
                 ]} 
               />
             </div>
+          </TabsContent>
+
+          {/* RESULTS TAB */}
+          <TabsContent value="results">
+            {loading && !liveData ? (
+              <div className="space-y-4">
+                <MatchResultsSkeleton />
+              </div>
+            ) : liveData ? (
+              <div className="space-y-6">
+                <MatchResults matches={liveData.allMatches} />
+              </div>
+            ) : null}
           </TabsContent>
         </Tabs>
       </div>
