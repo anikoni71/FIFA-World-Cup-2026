@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { teams, groupMatches, groups } from '@/data/teams';
-import { getLiveData, GetLiveDataOutputType, formatToBDT, getMatchTimestamp } from '@/lib/api';
+import { getLiveData, GetLiveDataOutputType } from '@/lib/api';
 import MiniGroup from '@/components/MiniGroup';
 import InteractiveBracket from '@/components/InteractiveBracket';
 import MatchResults from '@/components/MatchResults';
@@ -19,102 +19,69 @@ import { Skeleton } from '@/components/ui/skeleton';
 const leftGroups = ['A', 'B', 'C', 'D', 'E', 'F'];
 const rightGroups = ['G', 'H', 'I', 'J', 'K', 'L'];
 
-function getGroupMatchData(g: string, liveAllMatches: GetLiveDataOutputType['allMatches'] = []) {
-  if (liveAllMatches.length > 0) {
-    return liveAllMatches
-      .filter(m => m.group === g)
-      .map(m => ({ 
-        t1: m.team1Code, 
-        t2: m.team2Code, 
-        date: `${m.bdt.time} BDT • ${m.bdt.date}` 
-      }));
-  }
+function getGroupMatchData(g: string) {
+  const parseAndFormatBDT = (dateStr: string, timeStr: string) => {
+    try {
+      const timeRe = timeStr.match(/(\d+)(?::(\d+))?\s*(AM|PM)/i);
+      if (!timeRe) {
+        return timeStr && !timeStr.toLowerCase().includes('tbd') ? `${timeStr} • ${dateStr}` : `Time TBD • ${dateStr}`;
+      }
+      const [_, h, m, ampm] = timeRe;
+      const dateTry = `${dateStr}, 2026 ${h}:${m || '00'} ${ampm} EDT`;
+      const d = new Date(dateTry);
+      if (isNaN(d.getTime())) return `Time TBD • ${dateStr}`;
+      
+      const formatted = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'Asia/Dhaka',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+        month: 'short',
+        day: 'numeric'
+      }).formatToParts(d);
+      
+      let hour = '', minute = '', dayPeriod = '', month = '', day = '';
+      for (const part of formatted) {
+        if (part.type === 'hour') hour = part.value;
+        if (part.type === 'minute') minute = part.value;
+        if (part.type === 'dayPeriod') dayPeriod = part.value;
+        if (part.type === 'month') month = part.value;
+        if (part.type === 'day') day = part.value;
+      }
+      return `${hour}:${minute} ${dayPeriod} BDT • ${day} ${month}`;
+    } catch {
+      return `Time TBD • ${dateStr}`;
+    }
+  };
 
-  // Fallback for initial load if liveData hasn't reached yet
   return groupMatches
     .filter(m => m.group === g)
-    .map(m => {
-      const ts = getMatchTimestamp(m.date, m.time, m.venue);
-      const bdt = formatToBDT(ts);
-      return { 
-        t1: m.team1, 
-        t2: m.team2, 
-        date: bdt.time === 'TBD' ? `Time TBD • ${m.date}` : `${bdt.time} BDT • ${bdt.date}`
-      };
-    });
+    .map(m => ({ t1: m.team1, t2: m.team2, date: parseAndFormatBDT(m.date, m.time) }));
 }
 
 export default function HomePage() {
   const [search, setSearch] = useState('');
   const [liveData, setLiveData] = useState<GetLiveDataOutputType | null>(null);
-  const [prevStates, setPrevStates] = useState<Record<string, { s1: string, s2: string, status: string }>>({});
   const [loading, setLoading] = useState(true);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
-  const [notifPermission, setNotifPermission] = useState<NotificationPermission>("default");
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if ("Notification" in window) {
-      setNotifPermission(Notification.permission);
-    }
-  }, []);
-
-  const requestNotifs = () => {
-    if ("Notification" in window) {
-      Notification.requestPermission().then(perm => setNotifPermission(perm));
-    }
-  };
-
-  const fetchLive = useCallback(async (isInitial = false) => {
+  const fetchLive = useCallback(async () => {
     try {
-      if (isInitial) setLoading(true);
+      setLoading(true);
       const data = await getLiveData({});
-      
-      // Notification Logic
-      if (Notification.permission === "granted" && Object.keys(prevStates).length > 0) {
-        data.allMatches.forEach(match => {
-          const prev = prevStates[match.id];
-          if (prev) {
-            // Kick-off notification
-            if (match.status === 'in' && prev.status === 'pre') {
-              new Notification("Match Started! ⚽", {
-                body: `${match.team1Name} vs ${match.team2Name} is now LIVE!`,
-                icon: "/favicon.ico"
-              });
-            }
-            
-            // Goal notification
-            if ((match.status === 'in' || match.status === 'live') && (match.team1Score !== prev.s1 || match.team2Score !== prev.s2)) {
-              const scorer = match.team1Score !== prev.s1 ? match.team1Name : match.team2Name;
-              new Notification(`GOAL for ${scorer}! ⚽`, {
-                body: `${match.team1Name} ${match.team1Score} - ${match.team2Score} ${match.team2Name}`,
-                silent: false,
-                tag: `goal-${match.id}-${match.team1Score}-${match.team2Score}`
-              });
-            }
-          }
-        });
-      }
-
-      // Update state for next comparison
-      const nextStates: Record<string, { s1: string, s2: string, status: string }> = {};
-      data.allMatches.forEach(m => {
-        nextStates[m.id] = { s1: m.team1Score, s2: m.team2Score, status: m.status };
-      });
-      setPrevStates(nextStates);
-      
       setLiveData(data);
       setLastRefresh(new Date());
     } catch (e) {
       console.error('Failed to fetch live data', e);
     } finally {
-      if (isInitial) setLoading(false);
+      setLoading(false);
     }
-  }, [prevStates]);
+  }, []);
 
   useEffect(() => {
-    fetchLive(true);
-    const interval = setInterval(() => fetchLive(false), 8000); // Poll every 8s for live updates
+    fetchLive();
+    const interval = setInterval(fetchLive, 5000); // refresh every 5s
     return () => clearInterval(interval);
   }, [fetchLive]);
 
@@ -140,30 +107,10 @@ export default function HomePage() {
                 <p className="text-muted-foreground text-[10px] sm:text-[11px]">USA • MEXICO • CANADA • LIVE</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              {notifPermission !== "granted" && (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={requestNotifs}
-                  className="text-accent hover:text-accent hover:bg-accent/10 px-2 h-8"
-                  title="Enable Match Notifications"
-                >
-                  <Zap className="w-4 h-4 mr-1" />
-                  <span className="text-[10px] sm:text-xs">Alerts</span>
-                </Button>
-              )}
-              {notifPermission === "granted" && (
-                <div className="flex items-center gap-1 text-green-500 bg-green-500/10 px-2 py-1 rounded-full border border-green-500/20 mr-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                  <span className="text-[9px] font-bold uppercase tracking-wider">Live Alerts On</span>
-                </div>
-              )}
-              <Button variant="outline" size="sm" onClick={() => fetchLive(true)} disabled={loading} className="shrink-0 h-8 sm:h-9">
-                <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-                <span className="hidden sm:inline ml-1">Refresh</span>
-              </Button>
-            </div>
+            <Button variant="outline" size="sm" onClick={fetchLive} disabled={loading} className="shrink-0 h-8 sm:h-9">
+              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+              <span className="hidden sm:inline ml-1">Refresh</span>
+            </Button>
           </div>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -205,7 +152,7 @@ export default function HomePage() {
       {/* Content */}
       <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4 pb-20 sm:pb-4">
         <Tabs defaultValue="live">
-          <TabsList className="fixed bottom-0 left-0 right-0 z-50 w-full grid grid-cols-6 bg-background/95 backdrop-blur border-t border-border p-1 sm:relative sm:w-auto sm:flex sm:bg-muted/50 sm:p-1 sm:rounded-lg sm:border-0 rounded-none h-[calc(64px+env(safe-area-inset-bottom))] pb-[calc(4px+env(safe-area-inset-bottom))] sm:pb-1 sm:h-auto sm:mb-4 shadow-[0_-4px_16px_rgba(0,0,0,0.1)] sm:shadow-none select-none overflow-x-auto">
+          <TabsList className="fixed bottom-0 left-0 right-0 z-50 w-full grid grid-cols-5 bg-background/95 backdrop-blur border-t border-border p-1.5 sm:relative sm:w-auto sm:flex sm:bg-muted/50 sm:p-1 sm:rounded-lg sm:border-0 rounded-none h-[calc(64px+env(safe-area-inset-bottom))] pb-[calc(4px+env(safe-area-inset-bottom))] sm:pb-1 sm:h-auto sm:mb-4 group-data-horizontal/tabs:h-[calc(64px+env(safe-area-inset-bottom))] sm:group-data-horizontal/tabs:h-8 shadow-[0_-4px_16px_rgba(0,0,0,0.1)] sm:shadow-none select-none">
             <TabsTrigger value="live" className="flex-col gap-1 rounded-[10px] sm:flex-row sm:rounded-md text-[10px] sm:text-sm h-full sm:h-auto data-active:text-primary group-data-[variant=default]/tabs-list:data-active:bg-primary/10 sm:group-data-[variant=default]/tabs-list:data-active:bg-background sm:group-data-[variant=default]/tabs-list:data-active:text-foreground outline-none">
               <Zap className="!size-5 sm:!size-4" /> <span className="font-bold sm:font-medium">Live</span>
             </TabsTrigger>
@@ -240,7 +187,7 @@ export default function HomePage() {
                       <p className="font-bold">Failed to load live updates</p>
                       <p className="opacity-80">We couldn't connect to the sports data provider. Showing cached or empty data.</p>
                     </div>
-                    <Button variant="outline" size="sm" onClick={() => fetchLive(true)} className="h-8 border-destructive/20 hover:bg-destructive hover:text-destructive-foreground">
+                    <Button variant="outline" size="sm" onClick={fetchLive} className="h-8 border-destructive/20 hover:bg-destructive hover:text-destructive-foreground">
                       Retry
                     </Button>
                   </div>
@@ -273,7 +220,7 @@ export default function HomePage() {
                       <p className="font-bold">Failed to load standings</p>
                       <p className="opacity-80">Network error fetching from provider.</p>
                     </div>
-                    <Button variant="outline" size="sm" onClick={() => fetchLive(true)} className="h-8 border-destructive/20 hover:bg-destructive hover:text-destructive-foreground">
+                    <Button variant="outline" size="sm" onClick={fetchLive} className="h-8 border-destructive/20 hover:bg-destructive hover:text-destructive-foreground">
                       Retry
                     </Button>
                   </div>
@@ -294,7 +241,7 @@ export default function HomePage() {
           <TabsContent value="groups">
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
               {[...leftGroups, ...rightGroups].map(g => (
-                <MiniGroup key={g} groupKey={g} teamCodes={groups[g]} matches={getGroupMatchData(g, liveData?.allMatches)} />
+                <MiniGroup key={g} groupKey={g} teamCodes={groups[g]} matches={getGroupMatchData(g)} />
               ))}
             </div>
           </TabsContent>
@@ -303,21 +250,37 @@ export default function HomePage() {
           <TabsContent value="stats">
             <div className="space-y-8 pb-12">
               <PlayerStatsChart />
-              {loading && !liveData ? (
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Skeleton className="w-5 h-5" />
-                    <Skeleton className="h-6 w-48" />
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <Skeleton className="h-[350px] w-full rounded-xl" />
-                    <Skeleton className="h-[350px] w-full rounded-xl" />
-                    <Skeleton className="h-[350px] w-full rounded-xl" />
-                  </div>
-                </div>
-              ) : (
-                <PlayerStats leaders={liveData?.playerStats || []} />
-              )}
+              <PlayerStats 
+                leaders={[
+                  {
+                    category: 'goals',
+                    categoryLabel: 'Top Goalscorers',
+                    players: [
+                      { rank: 1, name: 'K. Mbappé', team: 'FRA', value: 5, teamLogo: 'https://a.espncdn.com/i/teamlogos/soccer/500/478.png' },
+                      { rank: 2, name: 'L. Messi', team: 'ARG', value: 4, teamLogo: 'https://a.espncdn.com/i/teamlogos/soccer/500/202.png' },
+                      { rank: 3, name: 'J. Bellingham', team: 'ENG', value: 3, teamLogo: 'https://a.espncdn.com/i/teamlogos/soccer/500/468.png' },
+                    ]
+                  },
+                  {
+                    category: 'assists',
+                    categoryLabel: 'Top Assists',
+                    players: [
+                      { rank: 1, name: 'K. De Bruyne', team: 'BEL', value: 4, teamLogo: 'https://a.espncdn.com/i/teamlogos/soccer/500/455.png' },
+                      { rank: 2, name: 'L. Messi', team: 'ARG', value: 3, teamLogo: 'https://a.espncdn.com/i/teamlogos/soccer/500/202.png' },
+                      { rank: 3, name: 'Vinícius Jr.', team: 'BRA', value: 3, teamLogo: 'https://a.espncdn.com/i/teamlogos/soccer/500/205.png' },
+                    ]
+                  },
+                  {
+                    category: 'saves',
+                    categoryLabel: 'Most Saves',
+                    players: [
+                      { rank: 1, name: 'E. Martínez', team: 'ARG', value: 18, teamLogo: 'https://a.espncdn.com/i/teamlogos/soccer/500/202.png' },
+                      { rank: 2, name: 'A. Becker', team: 'BRA', value: 16, teamLogo: 'https://a.espncdn.com/i/teamlogos/soccer/500/205.png' },
+                      { rank: 3, name: 'G. Donnarumma', team: 'ITA', value: 15, teamLogo: 'https://a.espncdn.com/i/teamlogos/soccer/500/108.png' },
+                    ]
+                  }
+                ]} 
+              />
             </div>
           </TabsContent>
 

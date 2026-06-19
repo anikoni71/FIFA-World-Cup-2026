@@ -1,4 +1,4 @@
-import { GetLiveDataOutputType, formatToBDT, getMatchTimestamp } from '@/lib/api';
+import { GetLiveDataOutputType } from '@/lib/api';
 import { knockoutMatches, teams } from '@/data/teams';
 import { resolveBracket } from '@/lib/bracketResolver';
 import { Trophy } from 'lucide-react';
@@ -29,11 +29,38 @@ export default function InteractiveBracket({ standings, knockoutResults }: Props
     return teams[teamCode]?.flag || ' ';
   };
 
-  const parseAndFormatBDT = (dateStr: string, timeStr: string, venueStr?: string) => {
-    const ts = getMatchTimestamp(dateStr, timeStr, venueStr || '');
-    const bdt = formatToBDT(ts);
-    if (bdt.time === 'TBD') return `Time TBD • ${dateStr}`;
-    return `${bdt.time} BDT • ${bdt.date}`;
+  const parseAndFormatBDT = (dateStr: string, timeStr: string) => {
+    try {
+      const timeRe = timeStr.match(/(\d+)(?::(\d+))?\s*(AM|PM)/i);
+      if (!timeRe) {
+        return timeStr && !timeStr.toLowerCase().includes('tbd') ? `${timeStr} • ${dateStr}` : `Time TBD • ${dateStr}`;
+      }
+      const [_, h, m, ampm] = timeRe;
+      const dateTry = `${dateStr}, 2026 ${h}:${m || '00'} ${ampm} EDT`;
+      const d = new Date(dateTry);
+      if (isNaN(d.getTime())) return `Time TBD • ${dateStr}`;
+      
+      const formatted = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'Asia/Dhaka',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+        month: 'short',
+        day: 'numeric'
+      }).formatToParts(d);
+      
+      let hour = '', minute = '', dayPeriod = '', month = '', day = '';
+      for (const part of formatted) {
+        if (part.type === 'hour') hour = part.value;
+        if (part.type === 'minute') minute = part.value;
+        if (part.type === 'dayPeriod') dayPeriod = part.value;
+        if (part.type === 'month') month = part.value;
+        if (part.type === 'day') day = part.value;
+      }
+      return `${hour}:${minute} ${dayPeriod} BDT • ${day} ${month}`;
+    } catch {
+      return `Time TBD • ${dateStr}`;
+    }
   };
 
   const getScore = (mId: string, teamCode: string) => {
@@ -96,7 +123,7 @@ export default function InteractiveBracket({ standings, knockoutResults }: Props
         {/* Date and Venue info */}
         {match.date && (
           <div className="text-[8px] text-muted-foreground mt-1 truncate">
-            {parseAndFormatBDT(match.date, match.time, match.venue)} • {match.venue}
+            {parseAndFormatBDT(match.date, match.time)} • {match.venue}
           </div>
         )}
       </div>

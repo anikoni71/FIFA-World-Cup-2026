@@ -3,25 +3,103 @@ import { GetLiveDataOutputType } from "@/lib/api";
 import { format, parseISO } from "date-fns";
 import { CheckCircle2, Clock, Zap, CalendarDays, Filter } from "lucide-react";
 import { HeadToHeadModal } from "./HeadToHeadModal";
-import { teams } from "@/data/teams";
-import { motion, AnimatePresence } from "motion/react";
 
 export type MatchResult = GetLiveDataOutputType["allMatches"][0];
 
-function ScoreDigit({ value, highlight }: { value: string | number; highlight?: boolean }) {
-  return (
-    <AnimatePresence mode="popLayout">
-      <motion.span
-        key={value}
-        initial={{ y: 5, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        exit={{ y: -5, opacity: 0 }}
-        className={`text-xl sm:text-2xl font-extrabold ${highlight ? "text-primary" : ""}`}
-      >
-        {value}
-      </motion.span>
-    </AnimatePresence>
-  );
+function getMatchDateInfo(match: MatchResult) {
+  const fallback = {
+    date: "Date TBD",
+    time: "Time TBD",
+    dayLabel: match.date ? `${match.date}` : "Match Schedule Pending",
+    sortTime: Infinity,
+  };
+
+  // If we have local formats from our schedule (e.g. "June 11", "8PM")
+  if (match.date && match.time) {
+    try {
+      const timeRe = match.time.match(/(\d+)(?::(\d+))?\s*(AM|PM)/i);
+
+      let sortTime = Infinity;
+      if (!timeRe) {
+        const dateTry = `${match.date}, 2026 12:00 PM EDT`;
+        const d = new Date(dateTry);
+        if (!isNaN(d.getTime())) {
+          sortTime = d.getTime();
+        }
+        return {
+          date: match.date,
+          time: match.time.toLowerCase().includes("tbd")
+            ? "Time TBD"
+            : match.time,
+          dayLabel: `${match.date}`,
+          sortTime,
+        };
+      }
+
+      const [_, h, m, ampm] = timeRe;
+      const dateTry = `${match.date}, 2026 ${h}:${m || "00"} ${ampm} EDT`;
+      const d = new Date(dateTry);
+
+      if (isNaN(d.getTime())) {
+        return fallback;
+      }
+
+      sortTime = d.getTime();
+
+      const formatted = new Intl.DateTimeFormat("en-US", {
+        timeZone: "Asia/Dhaka",
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+        weekday: "long",
+        month: "short",
+        day: "numeric",
+      }).formatToParts(d);
+
+      let hour = "",
+        minute = "",
+        dayPeriod = "",
+        month = "",
+        day = "",
+        weekday = "";
+      for (const part of formatted) {
+        if (part.type === "hour") hour = part.value;
+        if (part.type === "minute") minute = part.value;
+        if (part.type === "dayPeriod") dayPeriod = part.value;
+        if (part.type === "month") month = part.value;
+        if (part.type === "day") day = part.value;
+        if (part.type === "weekday") weekday = part.value;
+      }
+      return {
+        date: `${day} ${month}`,
+        time: `${hour}:${minute} ${dayPeriod}`,
+        dayLabel: `${weekday}, ${day} ${month}`,
+        sortTime,
+      };
+    } catch {
+      return fallback;
+    }
+  }
+
+  // Backup for pure ISO dates (like from ESPN API direct without our schedule fallback)
+  if (match.startTime) {
+    try {
+      const date = parseISO(match.startTime);
+      if (isNaN(date.getTime())) return fallback;
+      const utc = date.getTime() + date.getTimezoneOffset() * 60000;
+      const bdt = new Date(utc + 6 * 3600000);
+      return {
+        date: format(bdt, "dd MMM"),
+        time: format(bdt, "h:mm a"),
+        dayLabel: format(bdt, "EEEE, dd MMM"),
+        sortTime: date.getTime(),
+      };
+    } catch {
+      return fallback;
+    }
+  }
+
+  return fallback;
 }
 
 function MatchCard({
@@ -31,41 +109,21 @@ function MatchCard({
   match: MatchResult;
   onClick?: () => void;
 }) {
-  const isLive = match.status === "in" || match.status === "live";
-  const isFinished = match.completed || match.status === "post" || match.statusDetail === "FT";
-  const bdt = match.bdt;
-
-  const getFlagUrl = (code: string) => {
-    const team = teams[code];
-    if (team?.iso) return `https://flagcdn.com/w40/${team.iso.toLowerCase()}.png`;
-    return "";
-  };
-
-  const t1Flag = getFlagUrl(match.team1Code);
-  const t2Flag = getFlagUrl(match.team2Code);
+  const isLive = match.status === "in";
+  const isFinished = match.completed;
+  const bdt = getMatchDateInfo(match);
 
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
+    <div
       onClick={onClick}
-      className={`bg-card border rounded-xl p-3 sm:p-4 transition-all duration-300 cursor-pointer hover:shadow-lg hover:border-primary/40 relative overflow-hidden ${
+      className={`bg-card border rounded-xl p-3 sm:p-4 transition-colors cursor-pointer hover:bg-muted/20 ${
         isLive
-          ? "border-primary/50 shadow-[0_0_15px_rgba(59,130,246,0.1)]"
+          ? "border-primary/50 ring-1 ring-primary/20"
           : isFinished
             ? "border-border/50"
             : "border-border"
       }`}
     >
-      {isLive && (
-        <motion.div 
-          initial={{ opacity: 0.5 }}
-          animate={{ opacity: [0.3, 0.6, 0.3] }}
-          transition={{ duration: 2, repeat: Infinity }}
-          className="absolute inset-0 bg-primary/5 pointer-events-none"
-        />
-      )}
       {/* Header */}
       <div className="flex items-center justify-between mb-2">
         <span className="text-[10px] text-muted-foreground font-semibold">
@@ -73,7 +131,7 @@ function MatchCard({
             (match.group ? `Group ${match.group}` : "Group Stage")}
         </span>
         <div
-          className={`flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-full transition-colors ${
+          className={`flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-full ${
             isLive
               ? "bg-primary/20 text-primary animate-pulse"
               : isFinished
@@ -91,20 +149,15 @@ function MatchCard({
       {/* Teams + Score */}
       <div className="flex items-center justify-between gap-1">
         <div className="flex flex-col items-center gap-1 min-w-[50px] sm:min-w-[60px]">
-          {t1Flag ? (
+          {match.team1Logo && (
             <img
-              src={t1Flag}
+              src={match.team1Logo}
               alt={match.team1Code}
-              referrerPolicy="no-referrer"
-              className="w-7 h-5 sm:w-8 sm:h-5.5 object-cover rounded shadow-sm border border-border/20"
+              className="w-7 h-7 sm:w-8 sm:h-8 object-contain"
             />
-          ) : (
-            <div className="w-7 h-5 sm:w-8 sm:h-5.5 bg-muted rounded flex items-center justify-center text-[8px] font-bold">
-              {match.team1Code}
-            </div>
           )}
           <span
-            className={`text-[10px] sm:text-xs font-bold truncate max-w-full ${match.winner === match.team1Code ? "text-primary" : ""}`}
+            className={`text-[10px] sm:text-xs font-bold ${match.winner === match.team1Code ? "text-primary" : ""}`}
           >
             {match.team1Code}
           </span>
@@ -117,33 +170,30 @@ function MatchCard({
             </span>
           )}
           <div className="flex items-center gap-1.5 sm:gap-2">
-            <ScoreDigit 
-              value={match.status === "pre" ? "-" : match.team1Score} 
-              highlight={match.winner === match.team1Code} 
-            />
+            <span
+              className={`text-xl sm:text-2xl font-extrabold ${match.winner === match.team1Code ? "text-primary" : ""}`}
+            >
+              {match.status === "pre" ? "-" : match.team1Score}
+            </span>
             <span className="text-muted-foreground text-xs">:</span>
-            <ScoreDigit 
-              value={match.status === "pre" ? "-" : match.team2Score} 
-              highlight={match.winner === match.team2Code} 
-            />
+            <span
+              className={`text-xl sm:text-2xl font-extrabold ${match.winner === match.team2Code ? "text-primary" : ""}`}
+            >
+              {match.status === "pre" ? "-" : match.team2Score}
+            </span>
           </div>
         </div>
 
         <div className="flex flex-col items-center gap-1 min-w-[50px] sm:min-w-[60px]">
-          {t2Flag ? (
+          {match.team2Logo && (
             <img
-              src={t2Flag}
+              src={match.team2Logo}
               alt={match.team2Code}
-              referrerPolicy="no-referrer"
-              className="w-7 h-5 sm:w-8 sm:h-5.5 object-cover rounded shadow-sm border border-border/20"
+              className="w-7 h-7 sm:w-8 sm:h-8 object-contain"
             />
-          ) : (
-            <div className="w-7 h-5 sm:w-8 sm:h-5.5 bg-muted rounded flex items-center justify-center text-[8px] font-bold">
-              {match.team2Code}
-            </div>
           )}
           <span
-            className={`text-[10px] sm:text-xs font-bold truncate max-w-full ${match.winner === match.team2Code ? "text-primary" : ""}`}
+            className={`text-[10px] sm:text-xs font-bold ${match.winner === match.team2Code ? "text-primary" : ""}`}
           >
             {match.team2Code}
           </span>
@@ -159,7 +209,7 @@ function MatchCard({
         </div>
         {match.venue && <div className="truncate">📍 {match.venue}</div>}
       </div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -180,8 +230,13 @@ export default function MatchResults({
     if (filter === "completed") list = list.filter((m) => m.completed);
     if (filter === "upcoming") list = list.filter((m) => !m.completed);
 
-    const withSortInfo = [...list];
-    withSortInfo.sort((a, b) => a.bdt.sortTime - b.bdt.sortTime);
+    // Compute sortTime and sort chronological
+    const withSortInfo = list.map((m) => {
+      const info = getMatchDateInfo(m);
+      return { ...m, _info: info };
+    });
+
+    withSortInfo.sort((a, b) => a._info.sortTime - b._info.sortTime);
     return withSortInfo;
   }, [matches, filter]);
 
@@ -189,7 +244,7 @@ export default function MatchResults({
   const grouped = useMemo(() => {
     const map = new Map<string, (typeof sortedAndFiltered)[0][]>();
     for (const m of sortedAndFiltered) {
-      const key = m.bdt.dayLabel;
+      const key = m._info.dayLabel;
       if (!map.has(key)) map.set(key, []);
       map.get(key)!.push(m);
     }
@@ -221,7 +276,7 @@ export default function MatchResults({
         <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
           <div className="flex items-center gap-2">
             <CalendarDays className="w-5 h-5 text-accent" />
-            <h2 className="text-base font-bold">Live Score</h2>
+            <h2 className="text-base font-bold">All Match Results</h2>
             <span className="text-[10px] text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
               {matches.length} matches
             </span>
