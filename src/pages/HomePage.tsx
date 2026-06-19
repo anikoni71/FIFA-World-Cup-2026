@@ -5,8 +5,9 @@ import { getLiveData, GetLiveDataOutputType, formatToBDT, getMatchTimestamp } fr
 import MiniGroup from '@/components/MiniGroup';
 import InteractiveBracket from '@/components/InteractiveBracket';
 import MatchResults from '@/components/MatchResults';
+import MatchResultsGrid from '@/components/MatchResultsGrid';
 import { MatchResultsSkeleton } from '@/components/MatchResultsSkeleton';
-import LiveStandings from '@/components/LiveStandings';
+import { StandingsGrid, GroupStandings } from '@/components/StandingsGrid';
 import { StandingsSkeleton } from '@/components/StandingsSkeleton';
 import PlayerStats, { Leader } from '@/components/PlayerStats';
 import PlayerStatsChart from '@/components/PlayerStatsChart';
@@ -222,7 +223,7 @@ export default function HomePage() {
               <LineChart className="!size-5 sm:!size-4" /> <span className="font-bold sm:font-medium">Stats</span>
             </TabsTrigger>
             <TabsTrigger value="results" className="flex-col gap-1 rounded-[10px] sm:flex-row sm:rounded-md text-[10px] sm:text-sm h-full sm:h-auto data-active:text-primary group-data-[variant=default]/tabs-list:data-active:bg-primary/10 sm:group-data-[variant=default]/tabs-list:data-active:bg-background sm:group-data-[variant=default]/tabs-list:data-active:text-foreground outline-none">
-              <CalendarDays className="!size-5 sm:!size-4" /> <span className="font-bold sm:font-medium">Results Report</span>
+              <CalendarDays className="!size-5 sm:!size-4" /> <span className="font-bold sm:font-medium">Match Results</span>
             </TabsTrigger>
           </TabsList>
 
@@ -257,7 +258,22 @@ export default function HomePage() {
                   <h2 className="text-sm font-bold mb-3 flex items-center gap-2">
                     <BarChart3 className="w-4 h-4 text-secondary" /> Group Standings
                   </h2>
-                  <LiveStandings standings={liveData.standings} />
+                  <StandingsGrid 
+                    groups={liveData.standings.map((group: any) => ({
+                      groupName: `Group ${group.group}`,
+                      teams: group.teams.map((team: any) => ({
+                        id: team.id,
+                        name: team.name,
+                        flagUrl: team.logo,
+                        played: team.played,
+                        won: team.wins,
+                        drawn: team.draws,
+                        lost: team.losses,
+                        goalDifference: team.goalDiff,
+                        points: team.points
+                      }))
+                    }))} 
+                  />
                 </div>
               </div>
             ) : null}
@@ -278,7 +294,22 @@ export default function HomePage() {
                     </Button>
                   </div>
                 ) : null}
-                <LiveStandings standings={liveData.standings} />
+                <StandingsGrid 
+                  groups={liveData.standings.map((group: any) => ({
+                    groupName: `Group ${group.group}`,
+                    teams: group.teams.map((team: any) => ({
+                      id: team.id,
+                      name: team.name,
+                      flagUrl: team.logo,
+                      played: team.played,
+                      won: team.wins,
+                      drawn: team.draws,
+                      lost: team.losses,
+                      goalDifference: team.goalDiff,
+                      points: team.points
+                    }))
+                  }))} 
+                />
               </div>
             ) : (
               <StandingsSkeleton />
@@ -329,7 +360,7 @@ export default function HomePage() {
               </div>
             ) : liveData ? (
               <div className="space-y-6">
-                <MatchResults matches={liveData.allMatches} />
+                <MatchResultsGrid matches={liveData.allMatches} />
               </div>
             ) : null}
           </TabsContent>

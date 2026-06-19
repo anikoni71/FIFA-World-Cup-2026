@@ -10,6 +10,10 @@
       "destination": "/api/team.ts"
     },
     {
+      "source": "/api/match-details",
+      "destination": "/api/match-details.ts"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

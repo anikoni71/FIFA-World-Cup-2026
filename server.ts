@@ -192,6 +192,19 @@ app.get("/api/team/:id", async (req, res) => {
   }
 });
 
+app.get("/api/match-details/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const response = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/summary?event=${id}`);
+    if (!response.ok) throw new Error("Failed to fetch match summary");
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to fetch match details" });
+  }
+});
+
 async function startServer() {
   const PORT = 3000;
 
