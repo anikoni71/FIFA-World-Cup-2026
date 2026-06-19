@@ -127,7 +127,7 @@ export async function getTeamDetails(teamId: string, teamCode: string, allMatche
   
   if (teamId) {
     try {
-      const res = await fetch(`/api/team/${teamId}`);
+      const res = await fetch(`/api/team?id=${teamId}`);
       if (res.ok) {
         const data = await res.json();
         squad = (data.athletes || []).flatMap((group: any) => 
