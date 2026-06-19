@@ -221,7 +221,7 @@ export default function MatchResults({
         <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
           <div className="flex items-center gap-2">
             <CalendarDays className="w-5 h-5 text-accent" />
-            <h2 className="text-base font-bold">All Match Results</h2>
+            <h2 className="text-base font-bold">Live Score</h2>
             <span className="text-[10px] text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
               {matches.length} matches
             </span>
