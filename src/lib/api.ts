@@ -419,6 +419,7 @@ export async function getLiveData(options: LiveDataOptions): Promise<GetLiveData
     standings,
     todayMatches,
     knockoutResults,
+    playerStats,
     allMatches: allMatchesSorted,
     lastUpdated: new Date().toISOString(),
     hasError
