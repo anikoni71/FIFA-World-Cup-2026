@@ -4,6 +4,7 @@ import { createServer as createViteServer } from "vite";
 
 const standingsUrl = 'https://site.api.espn.com/apis/v2/sports/soccer/fifa.world/standings?season=2026';
 const scoreboardUrl = 'https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard';
+const statsUrl = 'https://site.api.espn.com/apis/v2/sports/soccer/fifa.world/statistics';
 
 async function startServer() {
   const app = express();
@@ -12,18 +13,49 @@ async function startServer() {
   // API constraints for backend server
   app.get("/api/live", async (req, res) => {
     try {
-      const ObjectAny = Object as any;
-      const [standingsRes, scoresRes, koRes] = await Promise.all([
+      const [standingsRes, scoresRes, koRes, statsRes] = await Promise.all([
         fetch(standingsUrl),
         fetch(scoreboardUrl),
-        fetch(`${scoreboardUrl}?dates=20260628-20260720&limit=100`).catch(() => null)
+        fetch(`${scoreboardUrl}?dates=20260628-20260720&limit=100`).catch(() => null),
+        fetch(statsUrl).catch(() => null)
       ]);
 
       const standingsData = await standingsRes.json() as any;
       const scoresData = await scoresRes.json() as any;
       const koData = koRes ? await koRes.json() as any : { events: [] };
+    const statsData = statsRes ? await statsRes.json() as any : { categories: [] };
 
-      const groupLetters = ['A','B','C','D','E','F','G','H','I','J','K','L'];
+    const formatToBDT = (timestamp: number) => {
+      if (timestamp === Infinity || isNaN(timestamp)) return { date: 'TBD', time: 'TBD', dayLabel: 'TBD', sortTime: Infinity };
+      const d = new Date(timestamp);
+      const formatter = new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'Asia/Dhaka',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric'
+      });
+      const parts = formatter.formatToParts(d);
+      let hour = '', minute = '', dayPeriod = '', month = '', day = '', weekday = '';
+      for (const part of parts) {
+        if (part.type === 'hour') hour = part.value;
+        if (part.type === 'minute') minute = part.value;
+        if (part.type === 'dayPeriod') dayPeriod = part.value;
+        if (part.type === 'month') month = part.value;
+        if (part.type === 'day') day = part.value;
+        if (part.type === 'weekday') weekday = part.value;
+      }
+      return {
+        date: `${day} ${month} (${weekday})`,
+        time: `${hour}:${minute} ${dayPeriod.toUpperCase()}`,
+        dayLabel: `${weekday}, ${day} ${month}`,
+        sortTime: timestamp
+      };
+    };
+
+    const groupLetters = ['A','B','C','D','E','F','G','H','I','J','K','L'];
       const standings = (standingsData.children || []).map((group: any, idx: number) => {
         const entries = group.standings?.entries || [];
         return {
@@ -75,6 +107,10 @@ async function startServer() {
         const { comp, home, away, winner } = parseEvent(event);
         const groupNote = comp?.altGameNote || '';
         const groupMatch = groupNote.match(/Group ([A-L])/);
+        const startTime = event.date || comp?.date || '';
+        const ts = startTime ? new Date(startTime).getTime() : Infinity;
+        const bdt = formatToBDT(ts);
+
         return {
           id: event.id,
           team1Code: home?.team?.abbreviation || '',
@@ -91,13 +127,19 @@ async function startServer() {
           group: groupMatch ? groupMatch[1] : '',
           completed: comp?.status?.type?.completed || false,
           winner,
-          startTime: event.date || comp?.date || '',
+          startTime,
+          bdt
         };
       });
 
       let knockoutResults = (koData.events || []).map((event: any) => {
         const { comp, home, away, winner } = parseEvent(event);
+        const startTime = event.date || comp?.date || '';
+        const ts = startTime ? new Date(startTime).getTime() : Infinity;
+        const bdt = formatToBDT(ts);
+
         return {
+          id: event.id,
           team1Code: home?.team?.abbreviation || '',
           team2Code: away?.team?.abbreviation || '',
           team1Score: home?.score || '0',
@@ -108,18 +150,46 @@ async function startServer() {
           winner,
           date: event.date || '',
           venue: comp?.venue?.fullName || '',
+          bdt
         };
       });
+
+      const playerStats = (statsData.categories || []).map((cat: any) => ({
+        category: cat.name,
+        categoryLabel: cat.displayName,
+        players: (cat.athletes || []).map((athlete: any, idx: number) => ({
+          rank: idx + 1,
+          name: athlete.athlete?.displayName || '',
+          team: athlete.team?.displayName || athlete.team?.abbreviation || '',
+          teamLogo: athlete.team?.logos?.[0]?.href || '',
+          value: athlete.displayValue || athlete.value || '0',
+          headshot: athlete.athlete?.headshot?.href
+        }))
+      }));
 
       res.json({
         standings,
         todayMatches,
         knockoutResults,
+        playerStats,
         lastUpdated: new Date().toISOString()
       });
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Failed to fetch live data" });
+    }
+  });
+
+  app.get("/api/team/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const response = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/teams/${id}/roster`);
+      if (!response.ok) throw new Error("Failed to fetch roster");
+      const data = await response.json();
+      res.json(data);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Failed to fetch team details" });
     }
   });
 

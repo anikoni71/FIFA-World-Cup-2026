@@ -1,11 +1,11 @@
-import { GetLiveDataOutputType } from '@/lib/api';
+import { GetLiveDataOutputType, formatToBDT, getMatchTimestamp } from '@/lib/api';
 import { knockoutMatches, teams } from '@/data/teams';
 import { resolveBracket } from '@/lib/bracketResolver';
-import { Trophy, ZoomIn, ZoomOut, Maximize } from 'lucide-react';
+import { Trophy } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { motion, useAnimation, useMotionValue } from 'motion/react';
-import { useRef, useEffect, useState } from 'react';
+import { motion } from 'motion/react';
+import { useRef } from 'react';
 
 // Helper for tailwind class merging
 function cn(...inputs: ClassValue[]) {
@@ -20,42 +20,6 @@ interface Props {
 export default function InteractiveBracket({ standings, knockoutResults }: Props) {
   const { resolveNode, matchWinners } = resolveBracket(standings, knockoutResults);
   const containerRef = useRef<HTMLDivElement>(null);
-  const controls = useAnimation();
-  const [scale, setScale] = useState(1);
-  const scaleMotion = useMotionValue(1);
-
-  const handleZoom = (direction: 'in' | 'out' | 'reset') => {
-    let newScale = scale;
-    if (direction === 'in') newScale = Math.min(scale + 0.2, 2);
-    else if (direction === 'out') newScale = Math.max(scale - 0.2, 0.5);
-    else {
-      newScale = 1;
-      controls.start({ x: 0, y: 0 });
-    }
-    
-    setScale(newScale);
-    scaleMotion.set(newScale);
-  };
-
-  useEffect(() => {
-    const handleWheel = (e: WheelEvent) => {
-      if (e.ctrlKey || e.metaKey) {
-        e.preventDefault();
-        const delta = e.deltaY * -0.01;
-        const newScale = Math.min(Math.max(scale + delta, 0.5), 2.5);
-        setScale(newScale);
-        scaleMotion.set(newScale);
-      }
-    };
-    
-    const element = containerRef.current;
-    if (element) {
-      element.addEventListener('wheel', handleWheel, { passive: false });
-    }
-    return () => {
-      if (element) element.removeEventListener('wheel', handleWheel);
-    };
-  }, [scale, scaleMotion]);
 
   const getTeamLabel = (teamCode: string) => {
     return teams[teamCode]?.name || teamCode;
@@ -65,38 +29,11 @@ export default function InteractiveBracket({ standings, knockoutResults }: Props
     return teams[teamCode]?.flag || ' ';
   };
 
-  const parseAndFormatBDT = (dateStr: string, timeStr: string) => {
-    try {
-      const timeRe = timeStr.match(/(\d+)(?::(\d+))?\s*(AM|PM)/i);
-      if (!timeRe) {
-        return timeStr && !timeStr.toLowerCase().includes('tbd') ? `${timeStr} • ${dateStr}` : `Time TBD • ${dateStr}`;
-      }
-      const [_, h, m, ampm] = timeRe;
-      const dateTry = `${dateStr}, 2026 ${h}:${m || '00'} ${ampm} EDT`;
-      const d = new Date(dateTry);
-      if (isNaN(d.getTime())) return `Time TBD • ${dateStr}`;
-      
-      const formatted = new Intl.DateTimeFormat('en-US', {
-        timeZone: 'Asia/Dhaka',
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true,
-        month: 'short',
-        day: 'numeric'
-      }).formatToParts(d);
-      
-      let hour = '', minute = '', dayPeriod = '', month = '', day = '';
-      for (const part of formatted) {
-        if (part.type === 'hour') hour = part.value;
-        if (part.type === 'minute') minute = part.value;
-        if (part.type === 'dayPeriod') dayPeriod = part.value;
-        if (part.type === 'month') month = part.value;
-        if (part.type === 'day') day = part.value;
-      }
-      return `${hour}:${minute} ${dayPeriod} BDT • ${day} ${month}`;
-    } catch {
-      return `Time TBD • ${dateStr}`;
-    }
+  const parseAndFormatBDT = (dateStr: string, timeStr: string, venueStr?: string) => {
+    const ts = getMatchTimestamp(dateStr, timeStr, venueStr || '');
+    const bdt = formatToBDT(ts);
+    if (bdt.time === 'TBD') return `Time TBD • ${dateStr}`;
+    return `${bdt.time} BDT • ${bdt.date}`;
   };
 
   const getScore = (mId: string, teamCode: string) => {
@@ -159,7 +96,7 @@ export default function InteractiveBracket({ standings, knockoutResults }: Props
         {/* Date and Venue info */}
         {match.date && (
           <div className="text-[8px] text-muted-foreground mt-1 truncate">
-            {parseAndFormatBDT(match.date, match.time)} • {match.venue}
+            {parseAndFormatBDT(match.date, match.time, match.venue)} • {match.venue}
           </div>
         )}
       </div>
@@ -180,35 +117,18 @@ export default function InteractiveBracket({ standings, knockoutResults }: Props
       <div className="flex justify-between items-center mb-6 relative z-20">
         <h2 className="text-lg font-bold">Automated Bracket — Live from Standings</h2>
         <div className="flex items-center gap-3">
-          <div className="hidden sm:flex text-[10px] items-center gap-1.5 text-muted-foreground bg-muted/30 px-3 py-1.5 rounded-full">
+          <div className="flex text-[10px] items-center gap-1.5 text-muted-foreground bg-muted/30 px-3 py-1.5 rounded-full">
             <span className="w-1.5 h-1.5 rounded-full border border-current" /> Auto-updates from real-time standings
-          </div>
-          <div className="flex items-center gap-1 bg-card border border-border rounded-lg p-1 shadow-sm">
-            <button onClick={() => handleZoom('out')} className="p-1.5 hover:bg-muted rounded text-muted-foreground hover:text-foreground transition-colors" title="Zoom Out">
-              <ZoomOut className="w-4 h-4" />
-            </button>
-            <button onClick={() => handleZoom('reset')} className="p-1.5 hover:bg-muted rounded text-muted-foreground hover:text-foreground transition-colors" title="Reset View">
-              <Maximize className="w-4 h-4" />
-            </button>
-            <button onClick={() => handleZoom('in')} className="p-1.5 hover:bg-muted rounded text-muted-foreground hover:text-foreground transition-colors" title="Zoom In">
-              <ZoomIn className="w-4 h-4" />
-            </button>
           </div>
         </div>
       </div>
       
-      {/* Zoom hint for desktop users */}
-      <div className="absolute bottom-4 left-4 z-20 hidden md:block text-[10px] text-muted-foreground bg-background/80 backdrop-blur px-2 py-1 rounded border border-border/50">
-        Ctrl + Scroll to zoom, drag to pan
-      </div>
-
-      <div className="w-full h-[600px] overflow-hidden cursor-grab active:cursor-grabbing rounded-lg border border-border/10 bg-[#0c0d12]">
+      <div className="w-full h-[700px] overflow-auto cursor-default rounded-lg border border-border/10 bg-[#0c0d12] scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
         <motion.div 
-          drag
-          dragConstraints={containerRef}
-          animate={controls}
-          style={{ scale: scaleMotion, originX: 0.5, originY: 0.5 }}
-          className="flex gap-4 sm:gap-6 min-w-[1200px] h-full items-center justify-center relative p-12"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+          className="flex gap-4 sm:gap-8 min-w-max h-full items-center p-12 lg:justify-center relative"
         >
           {/* LEFT SIDE */}
           <Column matchIds={['R32-1', 'R32-2', 'R32-3', 'R32-4', 'R32-5', 'R32-6', 'R32-7', 'R32-8']} align="around" title="ROUND OF 32" />
