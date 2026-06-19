@@ -1,6 +1,6 @@
-import { Award, TrendingUp, Target, Shield } from 'lucide-react';
+import { Award, TrendingUp, Target, Shield, BookCopy, AlertCircle } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 
 export type Player = {
   rank: number;
@@ -21,10 +21,14 @@ const categoryIcons: Record<string, typeof Award> = {
   goals: Target,
   assists: TrendingUp,
   saves: Shield,
+  yellow: BookCopy,
+  red: AlertCircle,
 };
 
 function getCategoryIcon(cat: string) {
   const key = cat.toLowerCase();
+  if (key.includes('yellow')) return BookCopy;
+  if (key.includes('red')) return AlertCircle;
   for (const [k, Icon] of Object.entries(categoryIcons)) {
     if (key.includes(k)) return Icon;
   }
@@ -34,8 +38,9 @@ function getCategoryIcon(cat: string) {
 function PlayerRow({ player, showHeadshot }: { player: Player; showHeadshot: boolean }) {
   return (
     <motion.div 
-      initial={{ opacity: 0, x: -10 }}
-      animate={{ opacity: 1, x: 0 }}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      layout
       className="flex items-center gap-2 sm:gap-3 py-2.5 px-3 hover:bg-muted/30 transition-colors"
     >
       <span className={`w-6 text-center text-xs font-extrabold ${
@@ -45,9 +50,9 @@ function PlayerRow({ player, showHeadshot }: { player: Player; showHeadshot: boo
       </span>
 
       {showHeadshot && player.headshot ? (
-        <img src={player.headshot} alt={player.name} className="w-8 h-8 rounded-full object-cover bg-muted" />
+        <img src={player.headshot} alt={player.name} className="w-8 h-8 rounded-full object-cover bg-muted ring-1 ring-border" />
       ) : (
-        <div className="w-8 h-8 rounded-full bg-muted/50 flex items-center justify-center text-[10px] font-bold text-muted-foreground">
+        <div className="w-8 h-8 rounded-full bg-muted/50 flex items-center justify-center text-[10px] font-bold text-muted-foreground border border-border">
           {player.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
         </div>
       )}
@@ -56,13 +61,22 @@ function PlayerRow({ player, showHeadshot }: { player: Player; showHeadshot: boo
         <div className="text-sm font-bold truncate">{player.name}</div>
         <div className="flex items-center gap-1.5">
           {player.teamLogo && (
-            <img src={player.teamLogo} alt={player.team} className="w-3.5 h-3.5 object-contain" />
+            <span className="text-xs">{player.teamLogo}</span>
           )}
-          <span className="text-[10px] text-muted-foreground font-medium">{player.team}</span>
+          <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-tight">{player.team}</span>
         </div>
       </div>
 
-      <span className="text-lg font-extrabold text-primary">{player.value}</span>
+      <AnimatePresence mode="popLayout">
+        <motion.span 
+          key={player.value}
+          initial={{ scale: 1.2, color: '#3b82f6' }}
+          animate={{ scale: 1, color: 'inherit' }}
+          className="text-lg font-black font-mono text-primary"
+        >
+          {player.value}
+        </motion.span>
+      </AnimatePresence>
     </motion.div>
   );
 }
@@ -111,7 +125,11 @@ function LeaderBoard({ leader }: { leader: Leader }) {
               <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={24}>
                  {
                    leader.players.slice(0, 5).map((entry, index) => (
-                     <Cell key={`cell-${index}`} fill={index === 0 ? '#3b82f6' : '#64748b'} />
+                     <Cell 
+                       key={`cell-${index}`} 
+                       fill={index === 0 ? '#3b82f6' : index === 1 ? '#60a5fa' : '#334155'} 
+                       fillOpacity={1 - (index * 0.15)}
+                     />
                    ))
                  }
               </Bar>
