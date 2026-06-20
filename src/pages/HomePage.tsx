@@ -13,9 +13,10 @@ import PlayerStats, { Leader } from '@/components/PlayerStats';
 import PlayerStatsChart from '@/components/PlayerStatsChart';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
-import { Trophy, Search, Globe, Zap, BarChart3, RefreshCw, LineChart, CalendarDays } from 'lucide-react';
+import { Trophy, Search, Globe, Zap, BarChart3, RefreshCw, LineChart, CalendarDays, Bell, BellOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { motion, AnimatePresence } from 'motion/react';
 
 const leftGroups = ['A', 'B', 'C', 'D', 'E', 'F'];
 const rightGroups = ['G', 'H', 'I', 'J', 'K', 'L'];
@@ -52,7 +53,17 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   const [notifPermission, setNotifPermission] = useState<NotificationPermission>("default");
+  const [alertsMuted, setAlertsMuted] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('wc2026_alerts_muted') === 'true';
+    }
+    return false;
+  });
   const navigate = useNavigate();
+
+  useEffect(() => {
+    localStorage.setItem('wc2026_alerts_muted', String(alertsMuted));
+  }, [alertsMuted]);
 
   useEffect(() => {
     if ("Notification" in window) {
@@ -72,7 +83,7 @@ export default function HomePage() {
       const data = await getLiveData({});
       
       // Notification Logic
-      if (Notification.permission === "granted" && Object.keys(prevStates).length > 0) {
+      if (Notification.permission === "granted" && !alertsMuted && Object.keys(prevStates).length > 0) {
         data.allMatches.forEach(match => {
           const prev = prevStates[match.id];
           if (prev) {
@@ -141,28 +152,64 @@ export default function HomePage() {
                 <p className="text-muted-foreground text-[10px] sm:text-[11px]">USA • MEXICO • CANADA • LIVE</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              {notifPermission !== "granted" && (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={requestNotifs}
-                  className="text-accent hover:text-accent hover:bg-accent/10 px-2 h-8"
-                  title="Enable Match Notifications"
-                >
-                  <Zap className="w-4 h-4 mr-1" />
-                  <span className="text-[10px] sm:text-xs">Alerts</span>
-                </Button>
-              )}
-              {notifPermission === "granted" && (
-                <div className="flex items-center gap-1 text-green-500 bg-green-500/10 px-2 py-1 rounded-full border border-green-500/20 mr-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                  <span className="text-[9px] font-bold uppercase tracking-wider">Live Alerts On</span>
+            <div className="flex items-center gap-3">
+              {/* Strategic Placement: Alerts Toggle */}
+              <div className="flex items-center gap-2 bg-background/40 border border-border px-3 py-1.5 rounded-full shadow-sm">
+                <AnimatePresence mode="wait">
+                  {alertsMuted ? (
+                    <motion.div
+                      key="muted"
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0.8, opacity: 0 }}
+                    >
+                      <BellOff className="w-4 h-4 text-muted-foreground" />
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="active"
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0.8, opacity: 0 }}
+                    >
+                      <Bell className="w-4 h-4 text-primary animate-pulse" />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-bold uppercase tracking-wider leading-none">Alerts</span>
+                  <span className="text-[8px] text-muted-foreground uppercase mt-1 leading-none">
+                    {alertsMuted ? 'Muted' : 'Active'}
+                  </span>
                 </div>
-              )}
-              <Button variant="outline" size="sm" onClick={() => fetchLive(true)} disabled={loading} className="shrink-0 h-8 sm:h-9">
+
+                <button 
+                  onClick={() => {
+                    if (notifPermission !== "granted") {
+                      requestNotifs();
+                    } else {
+                      setAlertsMuted(!alertsMuted);
+                    }
+                  }}
+                  className={`w-9 h-5 rounded-full transition-all relative flex items-center p-0.5 ${
+                    alertsMuted ? 'bg-muted border border-border' : 'bg-primary/20 border border-primary/30'
+                  }`}
+                  aria-label="Toggle Alerts"
+                >
+                  <motion.div 
+                    animate={{ x: alertsMuted ? 0 : 16 }}
+                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                    className={`w-3.5 h-3.5 rounded-full shadow-sm ${
+                      alertsMuted ? 'bg-muted-foreground/60' : 'bg-primary shadow-[0_0_8px_rgba(var(--primary),0.4)]'
+                    }`}
+                  />
+                </button>
+              </div>
+
+              <Button variant="outline" size="sm" onClick={() => fetchLive(true)} disabled={loading} className="shrink-0 h-9 rounded-full px-4 border-primary/20 hover:bg-primary/5">
                 <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-                <span className="hidden sm:inline ml-1">Refresh</span>
+                <span className="hidden sm:inline ml-1 font-bold">Refresh</span>
               </Button>
             </div>
           </div>
