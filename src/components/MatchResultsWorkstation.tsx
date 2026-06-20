@@ -8,30 +8,105 @@ import { motion, AnimatePresence } from 'motion/react';
 // MASTER ANALYTICS DATABASE (June 12 - June 20, 2026)
 // Incorporating all historically established results & upcoming fixtures
 const MASTER_RECORDS = [
-  // LIVE / SESSION DATA (Simulated for real-time dashboard demo)
-  { id: "live-usa", date: "2026-06-19T22:00:00Z", group: "D", homeTeam: "USA", homeCode: "USA", awayTeam: "Australia", awayCode: "AUS", homeScore: 1, awayScore: 1, status: "LIVE", minute: 74, venue: "Lumen Field" },
-  { id: "live-bra", date: "2026-06-19T23:30:00Z", group: "C", homeTeam: "Brazil", homeCode: "BRA", awayTeam: "Haiti", awayCode: "HAI", homeScore: 2, awayScore: 0, status: "LIVE", minute: 32, venue: "MetLife Stadium" },
+  // --- GROUP STAGE ---
+  // June 12
+  { id: "wc2026_m1", group: "Group A", date: "12 Jun (Fri)", home: "MEX", homeFlag: "🇲🇽", away: "RSA", awayFlag: "🇿🇦", time: "1:00 AM BDT", stadium: "📍 Mexico City", homeScore: 0, awayScore: 0, status: "FT" },
+  { id: "wc2026_m2", group: "Group A", date: "12 Jun (Fri)", home: "KOR", homeFlag: "🇰🇷", away: "CZE", awayFlag: "🇨🇿", time: "8:00 AM BDT", stadium: "📍 Guadalajara", homeScore: 0, awayScore: 0, status: "FT" },
 
-  // UPCOMING NODES
-  { id: "up-ger", date: "2026-06-20T18:00:00Z", group: "E", homeTeam: "Germany", homeCode: "GER", awayTeam: "Japan", awayCode: "JPN", homeScore: 0, awayScore: 0, status: "Upcoming", venue: "Estadio Azteca" },
-  { id: "up-sco", date: "2026-06-20T04:00:00Z", group: "C", homeTeam: "Scotland", homeCode: "SCO", awayTeam: "Morocco", awayCode: "MAR", homeScore: 0, awayScore: 0, status: "Upcoming", venue: "Boston Stadium" },
+  // June 13
+  { id: "wc2026_m3", group: "Group B", date: "13 Jun (Sat)", home: "CAN", homeFlag: "🇨🇦", away: "BIH", awayFlag: "🇧🇦", time: "1:00 AM BDT", stadium: "📍 Toronto", homeScore: 1, awayScore: 1, status: "FT" },
+  { id: "wc2026_m4", group: "Group D", date: "13 Jun (Sat)", home: "USA", homeFlag: "🇺🇸", away: "PAR", awayFlag: "🇵🇾", time: "7:00 AM BDT", stadium: "📍 Los Angeles", homeScore: 4, awayScore: 1, status: "FT" },
+  { id: "wc2026_m5", group: "Group D", date: "13 Jun (Sat)", home: "AUS", homeFlag: "🇦🇺", away: "TUR", awayFlag: "🇹🇷", time: "10:00 AM BDT", stadium: "📍 Vancouver", homeScore: 2, awayScore: 0, status: "FT" },
 
-  // RECENT VALIDATED RESULTS
-  { id: "m-mex", date: "2026-06-19T15:00:00Z", group: "A", homeTeam: "Mexico", homeCode: "MEX", awayTeam: "South Korea", awayCode: "KOR", homeScore: 1, awayScore: 0, status: "FT", venue: "Guadalajara Stadium" },
-  { id: "m-can", date: "2026-06-19T12:00:00Z", group: "B", homeTeam: "Canada", homeCode: "CAN", awayTeam: "Qatar", awayCode: "QAT", homeScore: 6, awayScore: 0, status: "FT", venue: "BC Place" },
-  { id: "m-sui", date: "2026-06-19T06:00:00Z", group: "B", homeTeam: "Switzerland", homeCode: "SUI", awayTeam: "Bosnia-Herz...", awayCode: "BIH", homeScore: 4, awayScore: 1, status: "FT", venue: "SoFi Stadium" },
-  { id: "m-cze", date: "2026-06-18T18:00:00Z", group: "A", homeTeam: "Czechia", homeCode: "CZE", awayTeam: "South Africa", awayCode: "RSA", homeScore: 1, awayScore: 1, status: "FT", venue: "Atlanta Stadium" },
-  { id: "m-col", date: "2026-06-18T12:00:00Z", group: "K", homeTeam: "Uzbekistan", homeCode: "UZB", awayTeam: "Colombia", awayCode: "COL", homeScore: 1, awayScore: 3, status: "FT", venue: "Estadio Azteca" },
-  { id: "m-gha", date: "2026-06-18T05:00:00Z", group: "L", homeTeam: "Ghana", homeCode: "GHA", awayTeam: "Panama", awayCode: "PAN", homeScore: 1, awayScore: 0, status: "FT", venue: "Toronto Stadium" },
-  { id: "m-eng", date: "2026-06-18T02:00:00Z", group: "L", homeTeam: "England", homeCode: "ENG", awayTeam: "Croatia", awayCode: "CRO", homeScore: 4, awayScore: 2, status: "FT", venue: "Dallas Stadium" },
-  
-  // ARCHIVE RECORDS
-  { id: "m-por", date: "2026-06-17T18:00:00Z", group: "K", homeTeam: "Portugal", homeCode: "POR", awayTeam: "DR Congo", awayCode: "COD", homeScore: 1, awayScore: 1, status: "FT", venue: "Houston Stadium" },
-  { id: "m-aut", date: "2026-06-17T15:00:00Z", group: "J", homeTeam: "Austria", homeCode: "AUT", awayTeam: "Jordan", awayCode: "JOR", homeScore: 3, awayScore: 1, status: "FT", venue: "Levi's Stadium" },
-  { id: "m-arg", date: "2026-06-17T12:00:00Z", group: "J", homeTeam: "Argentina", homeCode: "ARG", awayTeam: "Algeria", awayCode: "ALG", homeScore: 3, awayScore: 0, status: "FT", venue: "Kansas City Stadium" },
-  { id: "m-fra", date: "2026-06-17T03:00:00Z", group: "I", homeTeam: "France", homeCode: "FRA", awayTeam: "Senegal", awayCode: "SEN", homeScore: 3, awayScore: 1, status: "FT", venue: "NYC Stadium" },
-  { id: "m-esp", date: "2026-06-15T18:00:00Z", group: "H", homeTeam: "Spain", homeCode: "ESP", awayTeam: "Cape Verde", awayCode: "CPV", homeScore: 0, awayScore: 0, status: "FT", venue: "Atlanta Stadium" },
-  { id: "m-swe", date: "2026-06-15T12:00:00Z", group: "F", homeTeam: "Sweden", homeCode: "SWE", awayTeam: "Tunisia", awayCode: "TUN", homeScore: 5, awayScore: 1, status: "FT", venue: "Monterrey Stadium" },
+  // June 14
+  { id: "wc2026_m6", group: "Group B", date: "14 Jun (Sun)", home: "QAT", homeFlag: "🇶🇦", away: "SUI", awayFlag: "🇨🇭", time: "1:00 AM BDT", stadium: "📍 San Francisco", homeScore: 1, awayScore: 1, status: "FT" },
+  { id: "wc2026_m7", group: "Group C", date: "14 Jun (Sun)", home: "BRA", homeFlag: "🇧🇷", away: "MAR", awayFlag: "🇲🇦", time: "4:00 AM BDT", stadium: "📍 New York-NJ", homeScore: 1, awayScore: 1, status: "FT" },
+  { id: "wc2026_m8", group: "Group C", date: "14 Jun (Sun)", home: "HAI", homeFlag: "🇭🇹", away: "SCO", awayFlag: "🏴", time: "7:00 AM BDT", stadium: "📍 Boston", homeScore: 0, awayScore: 1, status: "FT" },
+  { id: "wc2026_m9", group: "Group E", date: "14 Jun (Sun)", home: "GER", homeFlag: "🇩🇪", away: "CUW", awayFlag: "🇨🇼", time: "11:00 PM BDT", stadium: "📍 Houston", homeScore: 7, awayScore: 1, status: "FT" },
+
+  // June 15
+  { id: "wc2026_m10", group: "Group F", date: "15 Jun (Mon)", home: "NED", homeFlag: "🇳🇱", away: "JPN", awayFlag: "🇯🇵", time: "2:00 AM BDT", stadium: "📍 Dallas", homeScore: 2, awayScore: 2, status: "FT" },
+  { id: "wc2026_m11", group: "Group E", date: "15 Jun (Mon)", home: "CIV", homeFlag: "🇨🇮", away: "ECU", awayFlag: "🇪🇨", time: "5:00 AM BDT", stadium: "📍 Philadelphia", homeScore: 1, awayScore: 0, status: "FT" },
+  { id: "wc2026_m12", group: "Group F", date: "15 Jun (Mon)", home: "SWE", homeFlag: "🇸🇪", away: "TUN", awayFlag: "🇹🇳", time: "8:00 AM BDT", stadium: "📍 Monterrey", homeScore: 5, awayScore: 1, status: "FT" },
+  { id: "wc2026_m13", group: "Group H", date: "15 Jun (Mon)", home: "ESP", homeFlag: "🇪🇸", away: "CPV", awayFlag: "🇨🇻", time: "10:00 PM BDT", stadium: "📍 Atlanta", homeScore: 0, awayScore: 0, status: "FT" },
+
+  // June 16
+  { id: "wc2026_m14", group: "Group G", date: "16 Jun (Tue)", home: "BEL", homeFlag: "🇧🇪", away: "EGY", awayFlag: "🇪🇬", time: "1:00 AM BDT", stadium: "📍 Seattle", homeScore: 1, awayScore: 1, status: "FT" },
+  { id: "wc2026_m15", group: "Group H", date: "16 Jun (Tue)", home: "KSA", homeFlag: "🇸🇦", away: "URU", awayFlag: "🇺🇾", time: "4:00 AM BDT", stadium: "📍 Miami", homeScore: 1, awayScore: 1, status: "FT" },
+  { id: "wc2026_m16", group: "Group G", date: "16 Jun (Tue)", home: "IRN", homeFlag: "🇮🇷", away: "NZL", awayFlag: "🇳🇿", time: "7:00 AM BDT", stadium: "📍 Los Angeles", homeScore: 2, awayScore: 2, status: "FT" },
+  { id: "wc2026_m17", group: "Group J", date: "16 Jun (Tue)", home: "AUT", homeFlag: "🇦🇹", away: "JOR", awayFlag: "🇯🇴", time: "10:00 AM BDT", stadium: "📍 San Francisco", homeScore: 3, awayScore: 1, status: "FT" },
+
+  // June 17
+  { id: "wc2026_m18", group: "Group I", date: "17 Jun (Wed)", home: "FRA", homeFlag: "🇫🇷", away: "SEN", awayFlag: "🇸🇳", time: "1:00 AM BDT", stadium: "📍 New York-NJ", homeScore: 3, awayScore: 1, status: "FT" },
+  { id: "wc2026_m19", group: "Group I", date: "17 Jun (Wed)", home: "IRQ", homeFlag: "🇮🇶", away: "NOR", awayFlag: "🇳🇴", time: "4:00 AM BDT", stadium: "📍 Boston", homeScore: 1, awayScore: 4, status: "FT" },
+  { id: "wc2026_m20", group: "Group J", date: "17 Jun (Wed)", home: "ARG", homeFlag: "🇦🇷", away: "ALG", awayFlag: "🇩🇿", time: "7:00 AM BDT", stadium: "📍 Kansas City", homeScore: 3, awayScore: 0, status: "FT" },
+  { id: "wc2026_m21", group: "Group K", date: "17 Jun (Wed)", home: "POR", homeFlag: "🇵🇹", away: "COD", awayFlag: "🇨🇩", time: "11:00 PM BDT", stadium: "📍 Houston", homeScore: 1, awayScore: 1, status: "FT" },
+
+  // June 18
+  { id: "wc2026_m22", group: "Group L", date: "18 Jun (Thu)", home: "ENG", homeFlag: "🏴", away: "CRO", awayFlag: "🇭🇷", time: "2:00 AM BDT", stadium: "📍 Dallas", homeScore: 4, awayScore: 2, status: "FT" },
+  { id: "wc2026_m23", group: "Group L", date: "18 Jun (Thu)", home: "GHA", homeFlag: "🇬🇭", away: "PAN", awayFlag: "🇵🇦", time: "5:00 AM BDT", stadium: "📍 Toronto", homeScore: 1, awayScore: 0, status: "FT" },
+  { id: "wc2026_m24", group: "Group K", date: "18 Jun (Thu)", home: "UZB", homeFlag: "🇺🇿", away: "COL", awayFlag: "🇨🇴", time: "8:00 AM BDT", stadium: "📍 Mexico City", homeScore: 1, awayScore: 3, status: "FT" },
+  { id: "wc2026_m25", group: "Group A", date: "18 Jun (Thu)", home: "A3", homeFlag: "🏳️", away: "RSA", awayFlag: "🇿🇦", time: "10:00 PM BDT", stadium: "📍 Atlanta", homeScore: 1, awayScore: 1, status: "FT" },
+
+  // June 19
+  { id: "wc2026_m26", group: "Group B", date: "19 Jun (Fri)", home: "SUI", homeFlag: "🇨🇭", away: "B4", awayFlag: "🏳️", time: "1:00 AM BDT", stadium: "📍 Los Angeles", homeScore: 4, awayScore: 1, status: "FT" },
+  { id: "wc2026_m27", group: "Group B", date: "19 Jun (Fri)", home: "CAN", homeFlag: "🇨🇦", away: "QAT", awayFlag: "🇶🇦", time: "4:00 AM BDT", stadium: "📍 Vancouver", homeScore: 6, awayScore: 0, status: "FT" },
+  { id: "wc2026_m28", group: "Group A", date: "19 Jun (Fri)", home: "MEX", homeFlag: "🇲🇽", away: "KOR", awayFlag: "🇰🇷", time: "7:00 AM BDT", stadium: "📍 Guadalajara", homeScore: 1, awayScore: 0, status: "FT" },
+  { id: "wc2026_m29", group: "Group D", date: "19 Jun (Fri)", home: "D3", homeFlag: "🏳️", away: "PAR", awayFlag: "🇵🇾", time: "10:00 AM BDT", stadium: "📍 San Francisco", homeScore: 0, awayScore: 0, status: "FT" },
+
+  // June 20 (Today)
+  { id: "wc2026_m30", group: "Group D", date: "20 Jun (Sat)", home: "USA", homeFlag: "🇺🇸", away: "AUS", awayFlag: "🇦🇺", time: "1:00 AM BDT", stadium: "📍 Seattle", homeScore: 2, homeScorers: ["⚽ 12' Pulisic", "⚽ 68' Balogun"], awayScore: 0, status: "FT" },
+  { id: "wc2026_m31", group: "Group C", date: "20 Jun (Sat)", home: "SCO", homeFlag: "🏴", away: "MAR", awayFlag: "🇲🇦", time: "4:00 AM BDT", stadium: "📍 Boston", homeScore: 0, awayScore: 1, awayScorers: ["⚽ 41' En-Nesyri"], status: "FT" },
+  { id: "wc2026_m32", group: "Group C", date: "20 Jun (Sat)", home: "BRA", homeFlag: "🇧🇷", away: "HAI", awayFlag: "🇭🇹", time: "7:00 AM BDT", stadium: "📍 Philadelphia", homeScore: 3, homeScorers: ["⚽ 18' Vinícius Jr", "⚽ 45' Rodrygo", "⚽ 82' Endrick"], awayScore: 0, status: "FT" },
+  { id: "wc2026_m33", group: "Group D", date: "LIVE", home: "TUR", homeFlag: "🇹🇷", away: "PAR", awayFlag: "🇵🇾", time: "5:00 PM BDT", stadium: "📍 San Francisco", homeScore: 0, awayScore: 1, awayScorers: ["⚽ 24' Almirón"], status: "90'+7" },
+  { id: "wc2026_m34", group: "Group F", date: "20 Jun (Sat)", home: "NED", homeFlag: "🇳🇱", away: "F4", awayFlag: "🏳️", time: "11:00 PM BDT", stadium: "📍 Houston", homeScore: 0, awayScore: 0, status: "17h 17m left" },
+
+  // June 21 (Tomorrow)
+  { id: "wc2026_m35", group: "Group E", date: "21 Jun (Sun)", home: "GER", homeFlag: "🇩🇪", away: "CIV", awayFlag: "🇨🇮", time: "2:00 AM BDT", stadium: "📍 Toronto", homeScore: 0, awayScore: 0, status: "19h 17m left" },
+  { id: "wc2026_m36", group: "Group E", date: "21 Jun (Sun)", home: "ECU", homeFlag: "🇪🇨", away: "CUW", awayFlag: "🇨🇼", time: "6:00 AM BDT", stadium: "📍 Kansas City", homeScore: 0, awayScore: 0, status: "1d 0h 17m left" },
+  { id: "wc2026_m37", group: "Group F", date: "21 Jun (Sun)", home: "TUN", homeFlag: "🇹🇳", away: "JPN", awayFlag: "🇯🇵", time: "10:00 AM BDT", stadium: "📍 Monterrey", homeScore: 0, awayScore: 0, status: "1d 5h 17m left" },
+  { id: "wc2026_m38", group: "Group H", date: "21 Jun (Sun)", home: "ESP", homeFlag: "🇪🇸", away: "KSA", awayFlag: "🇸🇦", time: "10:00 PM BDT", stadium: "📍 Atlanta", homeScore: 0, awayScore: 0, status: "1d 17h 17m left" },
+
+  // June 22
+  { id: "wc2026_m39", group: "Group G", date: "22 Jun (Mon)", home: "BEL", homeFlag: "🇧🇪", away: "IRN", awayFlag: "🇮🇷", time: "1:00 AM BDT", stadium: "📍 Los Angeles", homeScore: 0, awayScore: 0, status: "1d 21h 17m left" },
+  { id: "wc2026_m40", group: "Group H", date: "22 Jun (Mon)", home: "URU", homeFlag: "🇺🇾", away: "CPV", awayFlag: "🇨🇻", time: "4:00 AM BDT", stadium: "📍 Miami", homeScore: 0, awayScore: 0, status: "1d 21h 17m left" },
+  { id: "wc2026_m41", group: "Group G", date: "22 Jun (Mon)", home: "NZL", homeFlag: "🇳🇿", away: "EGY", awayFlag: "🇪🇬", time: "7:00 AM BDT", stadium: "📍 Vancouver", homeScore: 0, awayScore: 0, status: "2d 3h 17m left" },
+  { id: "wc2026_m42", group: "Group J", date: "22 Jun (Mon)", home: "ARG", homeFlag: "🇦🇷", away: "AUT", awayFlag: "🇦🇹", time: "11:00 PM BDT", stadium: "📍 Dallas", homeScore: 0, awayScore: 0, status: "2d 17h 17m left" },
+
+  // June 23
+  { id: "wc2026_m43", group: "Group I", date: "23 Jun (Tue)", home: "FRA", homeFlag: "🇫🇷", away: "I4", awayFlag: "🏳️", time: "3:00 AM BDT", stadium: "📍 Philadelphia", homeScore: 0, awayScore: 0, status: "2d 20h 17m left" },
+  { id: "wc2026_m44", group: "Group I", date: "23 Jun (Tue)", home: "NOR", homeFlag: "🇳🇴", away: "SEN", awayFlag: "🇸🇳", time: "6:00 AM BDT", stadium: "📍 New York-NJ", homeScore: 0, awayScore: 0, status: "2d 23h 17m left" },
+  { id: "wc2026_m45", group: "Group J", date: "23 Jun (Tue)", home: "JOR", homeFlag: "🇯🇴", away: "ALG", awayFlag: "🇩🇿", time: "9:00 AM BDT", stadium: "📍 San Francisco", homeScore: 0, awayScore: 0, status: "3d 5h 17m left" },
+  { id: "wc2026_m46", group: "Group K", date: "23 Jun (Tue)", home: "POR", homeFlag: "🇵🇹", away: "UZB", awayFlag: "🇺🇿", time: "11:00 PM BDT", stadium: "📍 Houston", homeScore: 0, awayScore: 0, status: "3d 17h 17m left" },
+
+  // June 24
+  { id: "wc2026_m47", group: "Group L", date: "24 Jun (Wed)", home: "ENG", homeFlag: "🏴", away: "GHA", awayFlag: "🇬🇭", time: "2:00 AM BDT", stadium: "📍 Boston", homeScore: 0, awayScore: 0, status: "3d 19h 17m left" },
+  { id: "wc2026_m48", group: "Group L", date: "24 Jun (Wed)", home: "PAN", homeFlag: "🇵🇦", away: "CRO", awayFlag: "🇭🇷", time: "5:00 AM BDT", stadium: "📍 Toronto", homeScore: 0, awayScore: 0, status: "3d 22h 17m left" },
+  { id: "wc2026_m49", group: "Group K", date: "24 Jun (Wed)", home: "COL", homeFlag: "🇨🇴", away: "K4", awayFlag: "🏳️", time: "8:00 AM BDT", stadium: "📍 Guadalajara", homeScore: 0, awayScore: 0, status: "4 d 3h 17m left" },
+
+  // June 25
+  { id: "wc2026_m50", group: "Group B", date: "25 Jun (Thu)", home: "SUI", homeFlag: "🇨🇭", away: "CAN", awayFlag: "🇨🇦", time: "1:00 AM BDT", stadium: "📍 Vancouver", homeScore: 0, awayScore: 0, status: "4d 21h 17m left" },
+  { id: "wc2026_m51", group: "Group B", date: "25 Jun (Thu)", home: "B3", homeFlag: "🏳️", away: "QAT", awayFlag: "🇶🇦", time: "1:00 AM BDT", stadium: "📍 Seattle", homeScore: 0, awayScore: 0, status: "4d 21h 17m left" },
+  { id: "wc2026_m52", group: "Group C", date: "25 Jun (Thu)", home: "MAR", homeFlag: "🇲🇦", away: "HAI", awayFlag: "🇭🇹", time: "4:00 AM BDT", stadium: "📍 Atlanta", homeScore: 0, awayScore: 0, status: "4d 21h 17m left" },
+  { id: "wc2026_m53", group: "Group C", date: "25 Jun (Thu)", home: "SCO", homeFlag: "🏴", away: "BRA", awayFlag: "🇧🇷", time: "4:00 AM BDT", stadium: "📍 Miami", homeScore: 0, awayScore: 0, status: "4d 21h 17m left" },
+  { id: "wc2026_m54", group: "Group A", date: "25 Jun (Thu)", home: "RSA", homeFlag: "🇿🇦", away: "KOR", awayFlag: "🇰🇷", time: "7:00 AM BDT", stadium: "📍 Monterrey", homeScore: 0, awayScore: 0, status: "5d 18h 17m left" },
+  { id: "wc2026_m55", group: "Group A", date: "25 Jun (Thu)", home: "A4", homeFlag: "🏳️", away: "MEX", awayFlag: "🇲🇽", time: "7:00 AM BDT", stadium: "📍 Mexico City", homeScore: 0, awayScore: 0, status: "5d 18h 17m left" },
+
+  // June 26
+  { id: "wc2026_m56", group: "Group E", date: "26 Jun (Fri)", home: "CUW", homeFlag: "🇨🇼", away: "CIV", awayFlag: "🇨🇮", time: "2:00 AM BDT", stadium: "📍 Philadelphia", homeScore: 0, awayScore: 0, status: "5d 19h 17m left" },
+  { id: "wc2026_m57", group: "Group E", date: "26 Jun (Fri)", home: "ECU", homeFlag: "🇪🇨", away: "GER", awayFlag: "🇩🇪", time: "2:00 AM BDT", stadium: "📍 New York-NJ", homeScore: 0, awayScore: 0, status: "5d 19h 17m left" },
+  { id: "wc2026_m58", group: "Group F", date: "26 Jun (Fri)", home: "TUN", homeFlag: "🇹🇳", away: "NED", awayFlag: "🇳🇱", time: "5:00 AM BDT", stadium: "📍 Kansas City", homeScore: 0, awayScore: 0, status: "5d 23h 17m left" },
+  { id: "wc2026_m59", group: "Group F", date: "26 Jun (Fri)", home: "JPN", homeFlag: "🇯🇵", away: "F3", awayFlag: "🏳️", time: "5:00 AM BDT", stadium: "📍 Dallas", homeScore: 0, awayScore: 0, status: "5d 23h 17m left" },
+  { id: "wc2026_m60", group: "Group D", date: "26 Jun (Fri)", home: "D4", homeFlag: "🏳️", away: "USA", awayFlag: "🇺🇸", time: "8:00 AM BDT", stadium: "📍 Los Angeles", homeScore: 0, awayScore: 0, status: "5d 19h 17m left" },
+  { id: "wc2026_m61", group: "Group D", date: "26 Jun (Fri)", home: "PAR", homeFlag: "🇵🇾", away: "AUS", awayFlag: "🇦🇺", time: "8:00 AM BDT", stadium: "📍 San Francisco", homeScore: 0, awayScore: 0, status: "5d 19h 17m left" },
+
+  // June 27
+  { id: "wc2026_m62", group: "Group I", date: "27 Jun (Sat)", home: "NOR", homeFlag: "🇳🇴", away: "FRA", awayFlag: "🇫🇷", time: "1:00 AM BDT", stadium: "📍 Boston", homeScore: 0, awayScore: 0, status: "6d 18h 17m left" },
+  { id: "wc2026_m63", group: "Group I", date: "27 Jun (Sat)", home: "SEN", homeFlag: "🇸🇳", away: "I3", awayFlag: "🏳️", time: "1:00 AM BDT", stadium: "📍 Toronto", homeScore: 0, awayScore: 0, status: "6d 18h 17m left" },
+  { id: "wc2026_m64", group: "Group H", date: "27 Jun (Sat)", home: "CPV", homeFlag: "🇨🇻", away: "KSA", awayFlag: "🇸🇦", time: "6:00 AM BDT", stadium: "📍 Houston", homeScore: 0, awayScore: 0, status: "7d 0h 17m left" },
+  { id: "wc2026_m65", group: "Group H", date: "27 Jun (Sat)", home: "URU", homeFlag: "🇺🇾", away: "ESP", awayFlag: "🇪🇸", time: "6:00 AM BDT", stadium: "📍 Guadalajara", homeScore: 0, awayScore: 0, status: "7d 1h 17m left" },
+  { id: "wc2026_m66", group: "Group G", date: "27 Jun (Sat)", home: "NZL", homeFlag: "🇳🇿", away: "BEL", awayFlag: "🇧🇪", time: "9:00 AM BDT", stadium: "📍 Vancouver", homeScore: 0, awayScore: 0, status: "7d 5h 17m left" },
+  { id: "wc2026_m67", group: "Group G", date: "27 Jun (Sat)", home: "EGY", homeFlag: "🇪🇬", away: "IRN", awayFlag: "🇮🇷", time: "9:00 AM BDT", stadium: "📍 Seattle", homeScore: 0, awayScore: 0, status: "7d 5h 17m left" },
 ];
 
 export default function MatchResultsWorkstation() {
@@ -71,6 +146,7 @@ export default function MatchResultsWorkstation() {
       const mapped: Match[] = MASTER_RECORDS.map(m => {
         const isFT = m.status === "FT";
         const isLive = m.status === "LIVE";
+        const isDateLive = m.date === "LIVE";
         
         return {
           id: m.id,
@@ -79,12 +155,14 @@ export default function MatchResultsWorkstation() {
           team1Name: m.homeTeam,
           team1Score: String(m.homeScore),
           team1Logo: getTeamLogo(m.homeCode),
+          team1Scorers: (m as any).homeScorers,
           team2Code: m.awayCode,
           team2Name: m.awayTeam,
           team2Score: String(m.awayScore),
           team2Logo: getTeamLogo(m.awayCode),
+          team2Scorers: (m as any).awayScorers,
           status: m.status,
-          statusDetail: isLive ? `${(m as any).minute}' • LIVE` : (isFT ? `FT • ${formatToBDT(m.date)}` : `BST ${formatToBDT(m.date)}`),
+          statusDetail: isLive ? `${(m as any).minute}' • LIVE` : (isFT ? `FT • ${formatToBDT(m.date)}` : (isDateLive ? "" : `BST ${formatToBDT(m.date)}`)),
           completed: isFT,
           venue: m.venue,
           group: m.group,
@@ -93,7 +171,11 @@ export default function MatchResultsWorkstation() {
         };
       });
 
-      setMatches(mapped.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+      setMatches(mapped.sort((a, b) => {
+        if (a.date === "LIVE") return -1;
+        if (b.date === "LIVE") return 1;
+        return new Date(b.date).getTime() - new Date(a.date).getTime();
+      }));
       setLastSync(new Date().toLocaleTimeString('en-US', { hour12: false }));
       setLoading(false);
     } catch (err) {
@@ -107,32 +189,44 @@ export default function MatchResultsWorkstation() {
     // LIVE TICKER ENGINE (Simulates match progression & dynamic scoring)
     const engine = setInterval(() => {
       setMatches(prev => prev.map(m => {
-        if (m.status === "LIVE") {
+        if (m.status === "LIVE" && !m.completed) {
           const minuteMatch = m.statusDetail.match(/(\d+)'/);
           if (minuteMatch) {
             const currentMin = parseInt(minuteMatch[1]);
             const nextMin = currentMin >= 90 ? 90 : currentMin + 1;
             
-            let s1 = m.team1Score;
-            let s2 = m.team2Score;
+            // Random performance trigger for live scores (25% chance of a goal every 5s)
+            const shouldScore = Math.random() > 0.75; 
             
-            // Random performance trigger for live scores
-            if (Math.random() > 0.985) {
-              Math.random() > 0.5 ? s1 = String(parseInt(s1) + 1) : s2 = String(parseInt(s2) + 1);
+            if (shouldScore) {
+              const isHome = Math.random() > 0.5;
+              const randomScorers = isHome 
+              ? ["Yılmaz", "Güler", "Tosun", "Çalhanoğlu", "Pulisic", "Vinícius Júnior", "Rodrygo"] 
+              : ["Sanabria", "Enciso", "Gómez", "Almirón", "Duke", "Boyle"];
+              const scorerName = randomScorers[Math.floor(Math.random() * randomScorers.length)];
+              
+              return {
+                ...m,
+                team1Score: isHome ? String(parseInt(m.team1Score) + 1) : m.team1Score,
+                team2Score: !isHome ? String(parseInt(m.team2Score) + 1) : m.team2Score,
+                team1Scorers: isHome ? [...(m.team1Scorers || []), `⚽ ${nextMin}' ${scorerName}`] : (m.team1Scorers || []),
+                team2Scorers: !isHome ? [...(m.team2Scorers || []), `⚽ ${nextMin}' ${scorerName}`] : (m.team2Scorers || []),
+                statusDetail: currentMin >= 90 ? "FT • LIVE" : `${nextMin}' • LIVE`,
+                completed: currentMin >= 90
+              };
             }
 
             return {
               ...m,
-              team1Score: s1,
-              team2Score: s2,
-              statusDetail: `${nextMin}' • LIVE`
+              statusDetail: currentMin >= 90 ? "FT • LIVE" : `${nextMin}' • LIVE`,
+              completed: currentMin >= 90
             };
           }
         }
         return m;
       }));
       setLastSync(new Date().toLocaleTimeString('en-US', { hour12: false }));
-    }, 10000);
+    }, 5000);
 
     return () => clearInterval(engine);
   }, []);

@@ -18,6 +18,8 @@ export interface Match {
   venue: string;
   group?: string;
   stage?: string;
+  team1Scorers?: string[];
+  team2Scorers?: string[];
 }
 
 export function ResultCard({ m, onClick }: { m: Match; onClick?: (id: string) => void }) {
@@ -26,41 +28,73 @@ export function ResultCard({ m, onClick }: { m: Match; onClick?: (id: string) =>
   return (
     <div 
       onClick={() => onClick?.(m.id)}
-      className={`bg-[#111827] border border-gray-800 rounded-xl p-3 shadow-sm flex flex-col justify-between h-full hover:border-primary/50 hover:bg-[#1f2937]/50 transition-all cursor-pointer group`}
+      className={`bg-slate-900/60 border border-slate-800/80 rounded-xl p-4 flex flex-col justify-between h-40 hover:border-slate-700/50 transition-all backdrop-blur-sm relative overflow-hidden cursor-pointer group`}
     >
-      <div>
-        <div className="flex items-center justify-between mb-2 pb-2 border-b border-gray-800/50">
-          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">{m.stage || (m.group ? `Group ${m.group}` : 'Group Stage')}</span>
-          <span className="text-[10px] text-gray-500">{m.date ? format(parseISO(m.date), 'MMM d') : '-'}</span>
-        </div>
-        <div className="space-y-2 py-1">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 overflow-hidden">
-              {isEmoji(m.team1Logo) ? (
-                <span className="text-sm">{m.team1Logo}</span>
-              ) : (
-                <img src={m.team1Logo} alt={m.team1Code} className="w-4 h-4 object-contain shrink-0" />
-              )}
-              <span className="font-bold text-xs truncate max-w-[120px] text-gray-200">{m.team1Name}</span>
-            </div>
-            <span className={`font-black text-sm ${m.winner === m.team1Code ? "text-primary" : "text-gray-400"}`}>{m.team1Score}</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 overflow-hidden">
-              {isEmoji(m.team2Logo) ? (
-                <span className="text-sm">{m.team2Logo}</span>
-              ) : (
-                <img src={m.team2Logo} alt={m.team2Code} className="w-4 h-4 object-contain shrink-0" />
-              )}
-              <span className="font-bold text-xs truncate max-w-[120px] text-gray-200">{m.team2Name}</span>
-            </div>
-            <span className={`font-black text-sm ${m.winner === m.team2Code ? "text-primary" : "text-gray-400"}`}>{m.team2Score}</span>
-          </div>
-        </div>
+      {/* Top Header */}
+      <div className="flex justify-between items-center text-[11px] font-medium tracking-wider text-slate-400 mb-1">
+        <span className="uppercase">{m.stage || (m.group ? `Group ${m.group}` : 'Group Stage')}</span>
+        {m.status === 'LIVE' || m.statusDetail.includes('LIVE') ? (
+          <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-400 bg-emerald-950/40 px-2 py-0.5 rounded-full border border-emerald-500/20 animate-pulse">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+            LIVE
+          </span>
+        ) : (
+          <span>{m.date !== "LIVE" && m.date ? format(parseISO(m.date), 'MMM d, HH:mm') : '-'}</span>
+        )}
       </div>
-      <div className="mt-2 text-[8px] text-gray-500 font-medium flex items-center justify-between italic">
-        <span className="truncate mr-2">{m.statusDetail}</span>
-        <span className="truncate max-w-[80px]">{m.venue}</span>
+
+      {/* Main Grid Content */}
+      <div className="grid grid-cols-3 items-center my-auto relative z-10">
+        
+        {/* HOME TEAM */}
+        <div className="flex flex-col items-center justify-center space-y-1 text-center">
+          {isEmoji(m.team1Logo) ? (
+            <span className="text-2xl drop-shadow-md">{m.team1Logo}</span>
+          ) : (
+            <img src={m.team1Logo} alt={m.team1Code} className="w-8 h-6 object-cover rounded-sm shadow-sm" />
+          )}
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-200">{m.team1Code}</span>
+          
+          {/* Home Goal Scorers */}
+          <div className="text-[10px] text-slate-400 font-mono mt-1 min-h-[14px] leading-tight max-w-[85px] truncate">
+            {m.team1Scorers && m.team1Scorers.length > 0 ? (
+              m.team1Scorers.map((scorer, i) => <div key={i}>{scorer}</div>)
+            ) : null}
+          </div>
+        </div>
+
+        {/* CENTER SCORE */}
+        <div className="flex flex-col items-center justify-center text-center">
+          <span className="text-[10px] font-mono text-emerald-400 font-bold bg-emerald-950/30 border border-emerald-900/40 px-3 py-0.5 rounded-full mb-1">
+            {m.status === 'LIVE' || m.statusDetail.includes('LIVE') ? m.statusDetail.split(' • ')[0] : m.statusDetail}
+          </span>
+          <span className="text-2xl font-black font-mono tracking-tight text-white mb-2">
+            {m.team1Score} : {m.team2Score}
+          </span>
+        </div>
+
+        {/* AWAY TEAM */}
+        <div className="flex flex-col items-center justify-center space-y-1 text-center">
+          {isEmoji(m.team2Logo) ? (
+            <span className="text-2xl drop-shadow-md">{m.team2Logo}</span>
+          ) : (
+            <img src={m.team2Logo} alt={m.team2Code} className="w-8 h-6 object-cover rounded-sm shadow-sm" />
+          )}
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-200">{m.team2Code}</span>
+          
+          {/* Away Goal Scorers */}
+          <div className="text-[10px] text-slate-400 font-mono mt-1 min-h-[14px] leading-tight max-w-[85px] truncate">
+            {m.team2Scorers && m.team2Scorers.length > 0 ? (
+              m.team2Scorers.map((scorer, i) => <div key={i}>{scorer}</div>)
+            ) : null}
+          </div>
+        </div>
+
+      </div>
+
+      {/* Footer Info */}
+      <div className="text-[10px] text-slate-500 text-center truncate border-t border-slate-800/50 pt-2 mt-1">
+        📍 {m.venue || '-'}
       </div>
     </div>
   );

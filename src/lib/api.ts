@@ -210,10 +210,18 @@ export function getMatchTimestamp(dateStr: string, timeStr: string, venueStr: st
   if (ampm.toUpperCase() === 'PM' && hours < 12) hours += 12;
   if (ampm.toUpperCase() === 'AM' && hours === 12) hours = 0;
 
-  const monthMap: Record<string, string> = { 'June': '06', 'July': '07' };
+  // The new data has dates like '12 Jun (Fri)'
   const dateParts = dateStr.split(' ');
-  const month = monthMap[dateParts[0]] || '06';
-  const day = dateParts[1].padStart(2, '0');
+  const dayStr = dateParts[0]; // e.g. '12'
+  const monthMap: Record<string, string> = { 'Jun': '06', 'Jul': '07', 'June': '06', 'July': '07' };
+  const monthName = dateParts.length > 1 ? dateParts[1] : 'Jun';
+  const month = monthMap[monthName] || monthMap['June'];
+  const day = dayStr.padStart(2, '0');
+
+  // If timeStr explicitly contains BDT, it means the time is ALREADY in BDT (+06:00)
+  if (timeStr.toLowerCase().includes('bdt')) {
+    tzOffset = '+06:00';
+  }
 
   const iso = `2026-${month}-${day}T${hours.toString().padStart(2, '0')}:${(m || '00').padStart(2, '0')}:00${tzOffset}`;
   const d = new Date(iso);
@@ -292,22 +300,21 @@ export async function getLiveData(options: LiveDataOptions): Promise<GetLiveData
         category: 'goals',
         categoryLabel: 'Top Scorers',
         players: [
-          { rank: 1, name: 'Kylian Mbappé', team: 'France', teamLogo: teams['FRA'].flag, value: 5, headshot: 'https://a.espncdn.com/i/headshots/soccer/players/full/215662.png' },
-          { rank: 2, name: 'Lionel Messi', team: 'Argentina', teamLogo: teams['ARG'].flag, value: 4, headshot: 'https://a.espncdn.com/i/headshots/soccer/players/full/45843.png' },
-          { rank: 3, name: 'Harry Kane', team: 'England', teamLogo: teams['ENG'].flag, value: 4, headshot: 'https://a.espncdn.com/i/headshots/soccer/players/full/159664.png' },
-          { rank: 4, name: 'Vinícius Júnior', team: 'Brazil', teamLogo: teams['BRA'].flag, value: 3, headshot: 'https://a.espncdn.com/i/headshots/soccer/players/full/231353.png' },
-          { rank: 5, name: 'Christian Pulisic', team: 'USA', teamLogo: teams['USA'].flag, value: 3, headshot: 'https://a.espncdn.com/i/headshots/soccer/players/full/223707.png' }
+          { rank: 1, name: 'Jonathan David', team: 'Canada', teamLogo: '🇨🇦', value: 3, headshot: 'https://a.espncdn.com/i/headshots/soccer/players/full/264511.png' },
+          { rank: 2, name: 'Lionel Messi', team: 'Argentina', teamLogo: '🇦🇷', value: 3, headshot: 'https://a.espncdn.com/i/headshots/soccer/players/full/45843.png' },
+          { rank: 3, name: 'Cyle Larin', team: 'Canada', teamLogo: '🇨🇦', value: 2, headshot: 'https://a.espncdn.com/i/headshots/soccer/players/full/188812.png' },
+          { rank: 4, name: 'Kylian Mbappé', team: 'France', teamLogo: '🇫🇷', value: 2, headshot: 'https://a.espncdn.com/i/headshots/soccer/players/full/215662.png' },
+          { rank: 5, name: 'Vinícius Júnior', team: 'Brazil', teamLogo: '🇧🇷', value: 2, headshot: 'https://a.espncdn.com/i/headshots/soccer/players/full/231353.png' }
         ]
       },
       {
         category: 'assists',
         categoryLabel: 'Top Assists',
         players: [
-          { rank: 1, name: 'Kevin De Bruyne', team: 'Belgium', teamLogo: teams['BEL'].flag, value: 4 },
-          { rank: 2, name: 'Bruno Fernandes', team: 'Portugal', teamLogo: teams['POR'].flag, value: 3 },
-          { rank: 3, name: 'Antoine Griezmann', team: 'France', teamLogo: teams['FRA'].flag, value: 3 },
-          { rank: 4, name: 'Bukayo Saka', team: 'England', teamLogo: teams['ENG'].flag, value: 2 },
-          { rank: 5, name: 'Neymar Jr', team: 'Brazil', teamLogo: teams['BRA'].flag, value: 2 }
+          { rank: 1, name: 'Alexander Isak', team: 'Sweden', teamLogo: '🇸🇪', value: 2, headshot: 'https://a.espncdn.com/i/headshots/soccer/players/full/253683.png' },
+          { rank: 2, name: 'Brahim Díaz', team: 'Morocco', teamLogo: '🇲🇦', value: 2, headshot: 'https://a.espncdn.com/i/headshots/soccer/players/full/240391.png' },
+          { rank: 3, name: 'Joshua Kimmich', team: 'Germany', teamLogo: '🇩🇪', value: 2, headshot: 'https://a.espncdn.com/i/headshots/soccer/players/full/196650.png' },
+          { rank: 4, name: 'Deniz Undav', team: 'Germany', teamLogo: '🇩🇪', value: 2, headshot: 'https://a.espncdn.com/i/headshots/soccer/players/full/222162.png' }
         ]
       },
       {
@@ -325,20 +332,16 @@ export async function getLiveData(options: LiveDataOptions): Promise<GetLiveData
         category: 'yellowCards',
         categoryLabel: 'Yellow Cards',
         players: [
-          { rank: 1, name: 'Pepe', team: 'Portugal', teamLogo: teams['POR'].flag, value: 3 },
-          { rank: 2, name: 'Cristian Romero', team: 'Argentina', teamLogo: teams['ARG'].flag, value: 2 },
-          { rank: 3, name: 'Antonio Rüdiger', team: 'Germany', teamLogo: teams['GER'].flag, value: 2 },
-          { rank: 4, name: 'John McGinn', team: 'Scotland', teamLogo: teams['SCO'].flag, value: 2 },
-          { rank: 5, name: 'Weston McKennie', team: 'USA', teamLogo: teams['USA'].flag, value: 1 }
+          { rank: 1, name: 'Teboho Mokoena', team: 'South Africa', teamLogo: '🇿🇦', value: 2 },
+          { rank: 2, name: 'Antonee Robinson', team: 'USA', teamLogo: '🇺🇸', value: 1 }
         ]
       },
       {
         category: 'redCards',
         categoryLabel: 'Red Cards',
         players: [
-          { rank: 1, name: 'Edson Álvarez', team: 'Mexico', teamLogo: teams['MEX'].flag, value: 1 },
-          { rank: 2, name: 'Serhij Sydorčuk', team: 'Ukraine', teamLogo: teams['UKR']?.flag || '🇺🇦', value: 1 },
-          { rank: 3, name: 'Granit Xhaka', team: 'Switzerland', teamLogo: teams['SUI'].flag, value: 1 }
+          { rank: 1, name: 'César Montes', team: 'Mexico', teamLogo: '🇲🇽', value: 1 },
+          { rank: 2, name: 'Assim Madibo', team: 'Qatar', teamLogo: '🇶🇦', value: 1 }
         ]
       }
     ];
@@ -395,25 +398,88 @@ export async function getLiveData(options: LiveDataOptions): Promise<GetLiveData
       id: m.id,
       team1Code: m.team1,
       team1Name: teams[m.team1]?.name || m.team1,
-      team1Score,
+      team1Score: m.id === "m22" || m.id === "m21" ? "0" : team1Score, // Will overwrite later
       team1Logo: teams[m.team1]?.flag || '',
       team2Code: m.team2,
       team2Name: teams[m.team2]?.name || m.team2,
-      team2Score,
+      team2Score: m.id === "m22" || m.id === "m21" ? "0" : team2Score, // Will overwrite later
       team2Logo: teams[m.team2]?.flag || '',
-      status,
-      statusDetail,
+      status: m.id === "m22" || m.id === "m21" ? "in" : status,
+      statusDetail: m.id === "m22" || m.id === "m21" ? "LIVE" : statusDetail,
       venue: m.venue,
       group: m.group || '',
       stage: m.stage || '',
-      completed,
+      completed: m.id === "m22" || m.id === "m21" ? false : completed,
       winner,
       startTime: espnMatch?.startTime || (timestamp !== Infinity ? new Date(timestamp).toISOString() : ''),
-      date: m.date,
+      date: m.id === "m22" || m.id === "m21" ? "LIVE" : m.date,
       time: m.time,
-      bdt
+      bdt,
+      team1Scorers: [] as string[],
+      team2Scorers: [] as string[]
     };
   }).sort((a, b) => (a.bdt.sortTime || 0) - (b.bdt.sortTime || 0));
+
+  // --- START SIMULATION INJECTION FOR USA AND TURKEY MATCHES ---
+  const nowForSim = Date.now();
+  const simStart = 1718000000000; // arbitrary fixed point in past
+  const elapsedMinutes = Math.floor((nowForSim - simStart) / 8000) % 95; // Loops 0-95 fast
+  
+  // Historical Matches Injection
+  const match19 = allMatchesSorted.find(m => m.id === "m19" || (m.team1Code === "USA" && m.team2Code === "AUS" && m.id === "m21")); // Wait, m19 is USA vs PAR in original data, but the prompt says m19 is USA vs AUS. Let's just override by id m21 or m19.
+  const usaAusMatch = allMatchesSorted.find(m => m.team1Code === "USA" && m.team2Code === "AUS") || allMatchesSorted.find(m => m.id === "m19");
+  if (usaAusMatch) {
+    usaAusMatch.statusDetail = "FT";
+    usaAusMatch.completed = true;
+    usaAusMatch.team1Score = "2";
+    usaAusMatch.team2Score = "0";
+    usaAusMatch.team1Scorers = ["⚽ 12' Pulisic", "⚽ 68' Balogun"];
+    usaAusMatch.team2Scorers = [];
+  }
+
+  const match15 = allMatchesSorted.find(m => m.id === "m15" || (m.team1Code === "SCO" && m.team2Code === "MAR"));
+  if (match15) {
+    match15.statusDetail = "FT";
+    match15.completed = true;
+    match15.team1Score = "0";
+    match15.team2Score = "1";
+    match15.team1Scorers = [];
+    match15.team2Scorers = ["⚽ 41' En-Nesyri"];
+  }
+
+  const match16 = allMatchesSorted.find(m => m.id === "m16" || (m.team1Code === "BRA" && m.team2Code === "HAI"));
+  if (match16) {
+    match16.statusDetail = "FT";
+    match16.completed = true;
+    match16.team1Score = "3";
+    match16.team2Score = "0";
+    match16.team1Scorers = ["⚽ 18' Vinícius Jr", "⚽ 45' Rodrygo", "⚽ 82' Endrick"];
+    match16.team2Scorers = [];
+  }
+
+  // TUR vs PAR
+  const turMatch = allMatchesSorted.find(m => m.team1Code === "TUR" && m.team2Code === "PAR") || allMatchesSorted.find(m => m.id === "m22");
+  if (turMatch) {
+    turMatch.status = "in";
+    turMatch.statusDetail = `${Math.min(96, 45 + elapsedMinutes)}' • LIVE`;
+    
+    // Simulate a goal around 85th minute for TUR
+    const hasTurScored = elapsedMinutes > 85; 
+    
+    turMatch.team1Score = hasTurScored ? "1" : "0";
+    turMatch.team2Score = "1";
+    
+    const hScorers = [];
+    if (Math.random() > 0.5 && hasTurScored) {
+        hScorers.push(`⚽ ${Math.min(96, 45 + elapsedMinutes)}' Güler`);
+    } else if (hasTurScored) {
+        hScorers.push(`⚽ 86' Yılmaz`);
+    }
+
+    turMatch.team1Scorers = hScorers;
+    turMatch.team2Scorers = ["⚽ 24' Almirón"];
+  }
+  // --- END SIMULATION INJECTION ---
 
   return {
     standings,

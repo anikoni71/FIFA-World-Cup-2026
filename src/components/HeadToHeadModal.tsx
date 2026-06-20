@@ -61,11 +61,9 @@ export function HeadToHeadModal({
           {/* Main Versus Section */}
           <div className="flex items-center justify-between mt-4">
             <div className="flex flex-col items-center gap-2 flex-1">
-              <img
-                src={team1.flag}
-                alt={team1.name}
-                className="w-16 h-16 sm:w-20 sm:h-20 object-contain drop-shadow-md"
-              />
+              <span className="text-6xl sm:text-7xl drop-shadow-md" title={team1.name}>
+                {team1.flag}
+              </span>
               <div className="text-center">
                 <div className="text-lg font-bold">{team1Code}</div>
                 <div className="text-xs text-muted-foreground">
@@ -81,11 +79,9 @@ export function HeadToHeadModal({
             </div>
 
             <div className="flex flex-col items-center gap-2 flex-1">
-              <img
-                src={team2.flag}
-                alt={team2.name}
-                className="w-16 h-16 sm:w-20 sm:h-20 object-contain drop-shadow-md"
-              />
+              <span className="text-6xl sm:text-7xl drop-shadow-md" title={team2.name}>
+                {team2.flag}
+              </span>
               <div className="text-center">
                 <div className="text-lg font-bold">{team2Code}</div>
                 <div className="text-xs text-muted-foreground">

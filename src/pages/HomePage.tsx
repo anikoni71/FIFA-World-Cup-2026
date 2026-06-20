@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { teams, groupMatches, groups } from '@/data/teams';
 import { getLiveData, GetLiveDataOutputType, formatToBDT, getMatchTimestamp } from '@/lib/api';
@@ -9,8 +9,8 @@ import MatchResultsGrid from '@/components/MatchResultsGrid';
 import { MatchResultsSkeleton } from '@/components/MatchResultsSkeleton';
 import { StandingsGrid, GroupStandings } from '@/components/StandingsGrid';
 import { StandingsSkeleton } from '@/components/StandingsSkeleton';
-import PlayerStats, { Leader } from '@/components/PlayerStats';
-import PlayerStatsChart from '@/components/PlayerStatsChart';
+import PlayerStatsWorkstation from '@/components/PlayerStatsWorkstation';
+import AllMatchScheduleWorkstation from '@/components/AllMatchScheduleWorkstation';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Trophy, Search, Globe, Zap, BarChart3, RefreshCw, LineChart, CalendarDays, Bell, BellOff } from 'lucide-react';
@@ -44,6 +44,41 @@ function getGroupMatchData(g: string, liveAllMatches: GetLiveDataOutputType['all
         date: bdt.time === 'TBD' ? `Time TBD • ${m.date}` : `${bdt.time} BDT • ${bdt.date}`
       };
     });
+}
+
+function LiveMarquee({ liveData }: { liveData: GetLiveDataOutputType | null }) {
+  if (!liveData?.allMatches) return null;
+  
+  const liveMatches = liveData.allMatches.filter(m => m.status === 'live' || m.status === 'in');
+  const recentMatches = liveData.allMatches.filter(m => m.status === 'FT' || m.status === 'ft').slice(0, 5);
+  
+  const matchesToDisplay = liveMatches.length > 0 ? liveMatches : recentMatches;
+  if (matchesToDisplay.length === 0) return null;
+
+  return (
+    <div className="fixed bottom-[calc(64px+env(safe-area-inset-bottom))] sm:bottom-0 left-0 right-0 bg-emerald-950/90 border-t border-emerald-900/50 backdrop-blur-md z-40 overflow-hidden py-1.5 flex items-center shadow-[0_-4px_20px_rgba(16,185,129,0.15)]">
+      <div className="bg-emerald-500 text-emerald-950 text-[10px] font-black uppercase px-3 py-0.5 ml-2 mr-2 rounded-sm shrink-0 flex items-center gap-1 z-10 shadow-lg">
+        <span className="w-1.5 h-1.5 rounded-full bg-emerald-950 animate-pulse" /> LIVE
+      </div>
+      <div className="flex-1 overflow-hidden relative flex items-center">
+        <div className="animate-marquee whitespace-nowrap flex items-center gap-8 text-emerald-50 text-xs font-mono font-medium">
+          {[...matchesToDisplay, ...matchesToDisplay, ...matchesToDisplay].map((m, i) => (
+            <span key={`${m.id}-${i}`} className="flex items-center gap-2">
+              <span className="font-bold opacity-80">{m.team1Code}</span>
+              <span className="font-black text-emerald-400 text-sm">{m.team1Score}</span>
+              <span className="opacity-40">-</span>
+              <span className="font-black text-emerald-400 text-sm">{m.team2Score}</span>
+              <span className="font-bold opacity-80">{m.team2Code}</span>
+              <span className="text-[10px] bg-emerald-900/50 px-1.5 py-0.5 rounded text-emerald-300 ml-1">
+                {m.status === 'live' || m.status === 'in' ? `${m.minute || "LIVE"}'` : 'FT'}
+              </span>
+              <span className="mx-2 text-emerald-500/30">|</span>
+            </span>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default function HomePage() {
@@ -264,7 +299,10 @@ export default function HomePage() {
               <Trophy className="!size-5 sm:!size-4" /> <span className="font-bold sm:font-medium">Bracket</span>
             </TabsTrigger>
             <TabsTrigger value="groups" className="flex-col gap-1 rounded-[10px] sm:flex-row sm:rounded-md text-[10px] sm:text-sm h-full sm:h-auto data-active:text-primary group-data-[variant=default]/tabs-list:data-active:bg-primary/10 sm:group-data-[variant=default]/tabs-list:data-active:bg-background sm:group-data-[variant=default]/tabs-list:data-active:text-foreground outline-none">
-              <Globe className="!size-5 sm:!size-4" /> <span className="font-bold sm:font-medium">Schedule</span>
+              <Globe className="!size-5 sm:!size-4" /> <span className="font-bold sm:font-medium">Groups</span>
+            </TabsTrigger>
+            <TabsTrigger value="all-matches" className="flex-col gap-1 rounded-[10px] sm:flex-row sm:rounded-md text-[10px] sm:text-sm h-full sm:h-auto data-active:text-primary group-data-[variant=default]/tabs-list:data-active:bg-primary/10 sm:group-data-[variant=default]/tabs-list:data-active:bg-background sm:group-data-[variant=default]/tabs-list:data-active:text-foreground outline-none">
+              <CalendarDays className="!size-5 sm:!size-4" /> <span className="font-bold sm:font-medium">All Matches</span>
             </TabsTrigger>
             <TabsTrigger value="stats" className="flex-col gap-1 rounded-[10px] sm:flex-row sm:rounded-md text-[10px] sm:text-sm h-full sm:h-auto data-active:text-primary group-data-[variant=default]/tabs-list:data-active:bg-primary/10 sm:group-data-[variant=default]/tabs-list:data-active:bg-background sm:group-data-[variant=default]/tabs-list:data-active:text-foreground outline-none">
               <LineChart className="!size-5 sm:!size-4" /> <span className="font-bold sm:font-medium">Stats</span>
@@ -372,30 +410,20 @@ export default function HomePage() {
           <TabsContent value="groups">
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
               {[...leftGroups, ...rightGroups].map(g => (
-                <MiniGroup key={g} groupKey={g} teamCodes={groups[g]} matches={getGroupMatchData(g, liveData?.allMatches)} />
+                <MiniGroup key={g} groupKey={g} teamCodes={groups[g as keyof typeof groups]} matches={getGroupMatchData(g, liveData?.allMatches)} />
               ))}
             </div>
+          </TabsContent>
+
+          {/* ALL MATCHES TAB */}
+          <TabsContent value="all-matches">
+            <AllMatchScheduleWorkstation allMatches={liveData?.allMatches || []} />
           </TabsContent>
 
           {/* STATS TAB */}
           <TabsContent value="stats">
             <div className="space-y-8 pb-12">
-              <PlayerStatsChart />
-              {loading && !liveData ? (
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Skeleton className="w-5 h-5" />
-                    <Skeleton className="h-6 w-48" />
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <Skeleton className="h-[350px] w-full rounded-xl" />
-                    <Skeleton className="h-[350px] w-full rounded-xl" />
-                    <Skeleton className="h-[350px] w-full rounded-xl" />
-                  </div>
-                </div>
-              ) : (
-                <PlayerStats leaders={liveData?.playerStats || []} />
-              )}
+              <PlayerStatsWorkstation />
             </div>
           </TabsContent>
 
@@ -413,6 +441,8 @@ export default function HomePage() {
           </TabsContent>
         </Tabs>
       </div>
+
+      <LiveMarquee liveData={liveData} />
     </div>
   );
 }

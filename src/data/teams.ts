@@ -84,90 +84,101 @@ export const groups: Record<string, string[]> = {
 };
 
 export const groupMatches: Match[] = [
-  // Group A
-  { id: 'A1', team1: 'MEX', team2: 'RSA', date: 'June 11', time: '8PM', venue: 'Mexico City, Mexico', stage: 'Group', group: 'A' },
-  { id: 'A2', team1: 'KOR', team2: 'CZE', date: 'June 12', time: '1PM', venue: 'Guadalajara, Mexico', stage: 'Group', group: 'A' },
-  { id: 'A3', team1: 'CZE', team2: 'RSA', date: 'June 18', time: '4PM', venue: 'Atlanta, USA', stage: 'Group', group: 'A' },
-  { id: 'A4', team1: 'MEX', team2: 'KOR', date: 'June 18', time: '7PM', venue: 'Guadalajara, Mexico', stage: 'Group', group: 'A' },
-  { id: 'A5', team1: 'RSA', team2: 'KOR', date: 'June 25', time: '1PM', venue: 'Monterrey, Mexico', stage: 'Group', group: 'A' },
-  { id: 'A6', team1: 'CZE', team2: 'MEX', date: 'June 25', time: '4PM', venue: 'Mexico City, Mexico', stage: 'Group', group: 'A' },
-  // Group B
-  { id: 'B1', team1: 'CAN', team2: 'BIH', date: 'June 12', time: '8PM', venue: 'Toronto, Canada', stage: 'Group', group: 'B' },
-  { id: 'B2', team1: 'QAT', team2: 'SUI', date: 'June 13', time: '8PM', venue: 'San Francisco Bay Area, USA', stage: 'Group', group: 'B' },
-  { id: 'B3', team1: 'SUI', team2: 'BIH', date: 'June 18', time: '8PM', venue: 'Los Angeles, USA', stage: 'Group', group: 'B' },
-  { id: 'B4', team1: 'CAN', team2: 'QAT', date: 'June 18', time: '11PM', venue: 'Vancouver, Canada', stage: 'Group', group: 'B' },
-  { id: 'B5', team1: 'BIH', team2: 'QAT', date: 'June 24', time: '8PM', venue: 'Seattle, USA', stage: 'Group', group: 'B' },
-  { id: 'B6', team1: 'SUI', team2: 'CAN', date: 'June 24', time: '8PM', venue: 'Vancouver, Canada', stage: 'Group', group: 'B' },
-  // Group C
-  { id: 'C1', team1: 'BRA', team2: 'MAR', date: 'June 13', time: '11PM', venue: 'New York/New Jersey, USA', stage: 'Group', group: 'C' },
-  { id: 'C2', team1: 'HAI', team2: 'SCO', date: 'June 14', time: '2AM', venue: 'Boston, USA', stage: 'Group', group: 'C' },
-  { id: 'C3', team1: 'SCO', team2: 'MAR', date: 'June 19', time: '11PM', venue: 'Boston, USA', stage: 'Group', group: 'C' },
-  { id: 'C4', team1: 'BRA', team2: 'HAI', date: 'June 20', time: '1:30AM', venue: 'Philadelphia, USA', stage: 'Group', group: 'C' },
-  { id: 'C5', team1: 'SCO', team2: 'BRA', date: 'June 24', time: '11PM', venue: 'Atlanta, USA', stage: 'Group', group: 'C' },
-  { id: 'C6', team1: 'MAR', team2: 'HAI', date: 'June 24', time: '11PM', venue: 'Miami, USA', stage: 'Group', group: 'C' },
-  // Group D
-  { id: 'D1', team1: 'USA', team2: 'PAR', date: 'June 13', time: '2AM', venue: 'Los Angeles, USA', stage: 'Group', group: 'D' },
-  { id: 'D2', team1: 'AUS', team2: 'TUR', date: 'June 14', time: '5AM', venue: 'Vancouver, Canada', stage: 'Group', group: 'D' },
-  { id: 'D3', team1: 'TUR', team2: 'PAR', date: 'June 20', time: '4AM', venue: 'San Francisco Bay Area, USA', stage: 'Group', group: 'D' },
-  { id: 'D4', team1: 'USA', team2: 'AUS', date: 'June 19', time: '8PM', venue: 'Seattle, USA', stage: 'Group', group: 'D' },
-  { id: 'D5', team1: 'TUR', team2: 'USA', date: 'June 26', time: '3AM', venue: 'Los Angeles, USA', stage: 'Group', group: 'D' },
-  { id: 'D6', team1: 'PAR', team2: 'AUS', date: 'June 26', time: '3AM', venue: 'San Francisco Bay Area, USA', stage: 'Group', group: 'D' },
-  // Group E
-  { id: 'E1', team1: 'GER', team2: 'CUW', date: 'June 14', time: '6PM', venue: 'Houston, USA', stage: 'Group', group: 'E' },
-  { id: 'E2', team1: 'CIV', team2: 'ECU', date: 'June 15', time: '12AM', venue: 'Philadelphia, USA', stage: 'Group', group: 'E' },
-  { id: 'E3', team1: 'GER', team2: 'CIV', date: 'June 20', time: '9PM', venue: 'Toronto, Canada', stage: 'Group', group: 'E' },
-  { id: 'E4', team1: 'ECU', team2: 'CUW', date: 'June 21', time: '1AM', venue: 'Kansas City, USA', stage: 'Group', group: 'E' },
-  { id: 'E5', team1: 'CUW', team2: 'CIV', date: 'June 25', time: '9PM', venue: 'Philadelphia, USA', stage: 'Group', group: 'E' },
-  { id: 'E6', team1: 'ECU', team2: 'GER', date: 'June 25', time: '9PM', venue: 'New York/New Jersey, USA', stage: 'Group', group: 'E' },
-  // Group F
-  { id: 'F1', team1: 'NED', team2: 'JPN', date: 'June 14', time: '9PM', venue: 'Dallas, USA', stage: 'Group', group: 'F' },
-  { id: 'F2', team1: 'SWE', team2: 'TUN', date: 'June 15', time: '3AM', venue: 'Monterrey, Mexico', stage: 'Group', group: 'F' },
-  { id: 'F3', team1: 'NED', team2: 'SWE', date: 'June 20', time: '6PM', venue: 'Houston, USA', stage: 'Group', group: 'F' },
-  { id: 'F4', team1: 'TUN', team2: 'JPN', date: 'June 21', time: '5AM', venue: 'Monterrey, Mexico', stage: 'Group', group: 'F' },
-  { id: 'F5', team1: 'JPN', team2: 'SWE', date: 'June 26', time: '12AM', venue: 'Dallas, USA', stage: 'Group', group: 'F' },
-  { id: 'F6', team1: 'TUN', team2: 'NED', date: 'June 26', time: '12AM', venue: 'Kansas City, USA', stage: 'Group', group: 'F' },
-  // Group G
-  { id: 'G1', team1: 'BEL', team2: 'EGY', date: 'June 15', time: '8PM', venue: 'Seattle, USA', stage: 'Group', group: 'G' },
-  { id: 'G2', team1: 'IRN', team2: 'NZL', date: 'June 16', time: '2AM', venue: 'Los Angeles, USA', stage: 'Group', group: 'G' },
-  { id: 'G3', team1: 'BEL', team2: 'IRN', date: 'June 21', time: '8PM', venue: 'Los Angeles, USA', stage: 'Group', group: 'G' },
-  { id: 'G4', team1: 'NZL', team2: 'EGY', date: 'June 22', time: '2AM', venue: 'Vancouver, Canada', stage: 'Group', group: 'G' },
-  { id: 'G5', team1: 'EGY', team2: 'IRN', date: 'June 27', time: '4AM', venue: 'Vancouver, Canada', stage: 'Group', group: 'G' },
-  { id: 'G6', team1: 'NZL', team2: 'BEL', date: 'June 27', time: '4AM', venue: 'Seattle, USA', stage: 'Group', group: 'G' },
-  // Group H
-  { id: 'H1', team1: 'ESP', team2: 'CPV', date: 'June 15', time: '5PM', venue: 'Atlanta, USA', stage: 'Group', group: 'H' },
-  { id: 'H2', team1: 'KSA', team2: 'URU', date: 'June 15', time: '11PM', venue: 'Miami, USA', stage: 'Group', group: 'H' },
-  { id: 'H3', team1: 'ESP', team2: 'KSA', date: 'June 21', time: '5PM', venue: 'Atlanta, USA', stage: 'Group', group: 'H' },
-  { id: 'H4', team1: 'URU', team2: 'CPV', date: 'June 21', time: '11PM', venue: 'Miami, USA', stage: 'Group', group: 'H' },
-  { id: 'H5', team1: 'CPV', team2: 'KSA', date: 'June 27', time: '1AM', venue: 'Houston, USA', stage: 'Group', group: 'H' },
-  { id: 'H6', team1: 'URU', team2: 'ESP', date: 'June 27', time: '1AM', venue: 'Guadalajara, Mexico', stage: 'Group', group: 'H' },
-  // Group I
-  { id: 'I1', team1: 'FRA', team2: 'SEN', date: 'June 16', time: '8PM', venue: 'New York/New Jersey, USA', stage: 'Group', group: 'I' },
-  { id: 'I2', team1: 'IRQ', team2: 'NOR', date: 'June 16', time: '11PM', venue: 'Boston, USA', stage: 'Group', group: 'I' },
-  { id: 'I3', team1: 'FRA', team2: 'IRQ', date: 'June 22', time: '10PM', venue: 'Philadelphia, USA', stage: 'Group', group: 'I' },
-  { id: 'I4', team1: 'NOR', team2: 'SEN', date: 'June 23', time: '1AM', venue: 'New York/New Jersey, USA', stage: 'Group', group: 'I' },
-  { id: 'I5', team1: 'SEN', team2: 'IRQ', date: 'June 26', time: '8PM', venue: 'Toronto, Canada', stage: 'Group', group: 'I' },
-  { id: 'I6', team1: 'NOR', team2: 'FRA', date: 'June 26', time: '8PM', venue: 'Boston, USA', stage: 'Group', group: 'I' },
-  // Group J
-  { id: 'J1', team1: 'ARG', team2: 'ALG', date: 'June 17', time: '2AM', venue: 'Kansas City, USA', stage: 'Group', group: 'J' },
-  { id: 'J2', team1: 'AUT', team2: 'JOR', date: 'June 17', time: '5AM', venue: 'San Francisco Bay Area, USA', stage: 'Group', group: 'J' },
-  { id: 'J3', team1: 'ARG', team2: 'AUT', date: 'June 22', time: '6PM', venue: 'Dallas, USA', stage: 'Group', group: 'J' },
-  { id: 'J4', team1: 'JOR', team2: 'ALG', date: 'June 23', time: '4AM', venue: 'San Francisco Bay Area, USA', stage: 'Group', group: 'J' },
-  { id: 'J5', team1: 'ALG', team2: 'AUT', date: 'June 28', time: '3AM', venue: 'Kansas City, USA', stage: 'Group', group: 'J' },
-  { id: 'J6', team1: 'JOR', team2: 'ARG', date: 'June 28', time: '3AM', venue: 'Dallas, USA', stage: 'Group', group: 'J' },
-  // Group K
-  { id: 'K1', team1: 'POR', team2: 'COD', date: 'June 17', time: '6PM', venue: 'Houston, USA', stage: 'Group', group: 'K' },
-  { id: 'K2', team1: 'UZB', team2: 'COL', date: 'June 18', time: '3AM', venue: 'Mexico City, Mexico', stage: 'Group', group: 'K' },
-  { id: 'K3', team1: 'COL', team2: 'COD', date: 'June 24', time: '3AM', venue: 'Guadalajara, Mexico', stage: 'Group', group: 'K' },
-  { id: 'K4', team1: 'POR', team2: 'UZB', date: 'June 23', time: '6PM', venue: 'Houston, USA', stage: 'Group', group: 'K' },
-  { id: 'K5', team1: 'COD', team2: 'UZB', date: 'June 28', time: '12:30AM', venue: 'Atlanta, USA', stage: 'Group', group: 'K' },
-  { id: 'K6', team1: 'COL', team2: 'POR', date: 'June 28', time: '12:30AM', venue: 'Miami, USA', stage: 'Group', group: 'K' },
-  // Group L
-  { id: 'L1', team1: 'ENG', team2: 'CRO', date: 'June 17', time: '9PM', venue: 'Dallas, USA', stage: 'Group', group: 'L' },
-  { id: 'L2', team1: 'GHA', team2: 'PAN', date: 'June 18', time: '12AM', venue: 'Toronto, Canada', stage: 'Group', group: 'L' },
-  { id: 'L3', team1: 'ENG', team2: 'GHA', date: 'June 23', time: '9PM', venue: 'Boston, USA', stage: 'Group', group: 'L' },
-  { id: 'L4', team1: 'PAN', team2: 'CRO', date: 'June 24', time: '12AM', venue: 'Toronto, Canada', stage: 'Group', group: 'L' },
-  { id: 'L5', team1: 'CRO', team2: 'GHA', date: 'June 27', time: '10PM', venue: 'Philadelphia, USA', stage: 'Group', group: 'L' },
-  { id: 'L6', team1: 'PAN', team2: 'ENG', date: 'June 27', time: '10PM', venue: 'New York/New Jersey, USA', stage: 'Group', group: 'L' },
+  // GROUP A
+  { id: "m1", group: "A", stage: "Group", venue: "Mexico City", date: "12 Jun (Fri)", team1: "MEX", team2: "RSA", time: "8:00 AM BDT" },
+  { id: "m2", group: "A", stage: "Group", venue: "Guadalajara", date: "13 Jun (Sat)", team1: "KOR", team2: "CZE", time: "6:00 AM BDT" },
+  { id: "m3", group: "A", stage: "Group", venue: "Atlanta", date: "19 Jun (Fri)", team1: "CZE", team2: "RSA", time: "7:00 AM BDT" },
+  { id: "m4", group: "A", stage: "Group", venue: "Guadalajara", date: "19 Jun (Fri)", team1: "MEX", team2: "KOR", time: "10:00 AM BDT" },
+  { id: "m5", group: "A", stage: "Group", venue: "Monterrey", date: "26 Jun (Fri)", team1: "RSA", team2: "KOR", time: "6:00 AM BDT" },
+  { id: "m6", group: "A", stage: "Group", venue: "Mexico City", date: "26 Jun (Fri)", team1: "CZE", team2: "MEX", time: "6:00 AM BDT" },
+
+  // GROUP B
+  { id: "m7", group: "B", stage: "Group", venue: "Toronto", date: "13 Jun (Sat)", team1: "CAN", team2: "BIH", time: "6:00 AM BDT" },
+  { id: "m8", group: "B", stage: "Group", venue: "San Fran", date: "14 Jun (Sun)", team1: "QAT", team2: "SUI", time: "9:00 AM BDT" },
+  { id: "m9", group: "B", stage: "Group", venue: "LA", date: "19 Jun (Fri)", team1: "SUI", team2: "BIH", time: "9:00 AM BDT" },
+  { id: "m10", group: "B", stage: "Group", venue: "Vancouver", date: "19 Jun (Fri)", team1: "CAN", team2: "QAT", time: "12:00 PM BDT" },
+  { id: "m11", group: "B", stage: "Group", venue: "Seattle", date: "25 Jun (Thu)", team1: "BIH", team2: "QAT", time: "9:00 AM BDT" },
+  { id: "m12", group: "B", stage: "Group", venue: "Vancouver", date: "25 Jun (Thu)", team1: "SUI", team2: "CAN", time: "9:00 AM BDT" },
+
+  // GROUP C
+  { id: "m13", group: "C", stage: "Group", venue: "NY/NJ", date: "14 Jun (Sun)", team1: "BRA", team2: "MAR", time: "9:00 AM BDT" },
+  { id: "m14", group: "C", stage: "Group", venue: "Boston", date: "14 Jun (Sun)", team1: "HAI", team2: "SCO", time: "12:00 PM BDT" },
+  { id: "m15", group: "C", stage: "Group", venue: "Boston", date: "20 Jun (Sat)", team1: "SCO", team2: "MAR", time: "9:00 AM BDT" },
+  { id: "m16", group: "C", stage: "Group", venue: "Philly", date: "20 Jun (Sat)", team1: "BRA", team2: "HAI", time: "11:30 AM BDT" },
+  { id: "m17", group: "C", stage: "Group", venue: "Atlanta", date: "25 Jun (Thu)", team1: "SCO", team2: "BRA", time: "9:00 AM BDT" },
+  { id: "m18", group: "C", stage: "Group", venue: "Miami", date: "25 Jun (Thu)", team1: "MAR", team2: "HAI", time: "9:00 AM BDT" },
+
+  // GROUP D
+  { id: "m19", group: "D", stage: "Group", venue: "LA", date: "13 Jun (Sat)", team1: "USA", team2: "PAR", time: "7:00 AM BDT" },
+  { id: "m20", group: "D", stage: "Group", venue: "Vancouver", date: "14 Jun (Sun)", team1: "AUS", team2: "TUR", time: "10:00 AM BDT" },
+  { id: "m21", group: "D", stage: "Group", venue: "Seattle", date: "21 Jun (Sun)", team1: "USA", team2: "AUS", time: "6:00 AM BDT" },
+  { id: "m22", group: "D", stage: "Group", venue: "San Fran", date: "20 Jun (Sat)", team1: "TUR", team2: "PAR", time: "5:00 PM BDT" }, 
+  { id: "m23", group: "D", stage: "Group", venue: "LA", date: "26 Jun (Fri)", team1: "TUR", team2: "USA", time: "7:00 AM BDT" },
+  { id: "m24", group: "D", stage: "Group", venue: "San Fran", date: "26 Jun (Fri)", team1: "PAR", team2: "AUS", time: "7:00 AM BDT" },
+
+  // GROUP E
+  { id: "m25", group: "E", stage: "Group", venue: "Houston", date: "15 Jun (Mon)", team1: "GER", team2: "CUW", time: "5:00 AM BDT" },
+  { id: "m26", group: "E", stage: "Group", venue: "Philly", date: "15 Jun (Mon)", team1: "CIV", team2: "ECU", time: "10:00 AM BDT" },
+  { id: "m27", group: "E", stage: "Group", venue: "Toronto", date: "21 Jun (Sun)", team1: "GER", team2: "CIV", time: "7:00 AM BDT" },
+  { id: "m28", group: "E", stage: "Group", venue: "Kansas City", date: "21 Jun (Sun)", team1: "ECU", team2: "CUW", time: "12:00 PM BDT" },
+  { id: "m29", group: "E", stage: "Group", venue: "Philly", date: "26 Jun (Fri)", team1: "CUW", team2: "CIV", time: "7:00 AM BDT" },
+  { id: "m30", group: "E", stage: "Group", venue: "NY/NJ", date: "26 Jun (Fri)", team1: "ECU", team2: "GER", time: "7:00 AM BDT" },
+
+  // GROUP F
+  { id: "m31", group: "F", stage: "Group", venue: "Dallas", date: "15 Jun (Mon)", team1: "NED", team2: "JPN", time: "8:00 AM BDT" },
+  { id: "m32", group: "F", stage: "Group", venue: "Monterrey", date: "15 Jun (Mon)", team1: "SWE", team2: "TUN", time: "3:00 PM BDT" },
+  { id: "m33", group: "F", stage: "Group", venue: "Houston", date: "21 Jun (Sun)", team1: "NED", team2: "SWE", time: "5:00 AM BDT" },
+  { id: "m34", group: "F", stage: "Group", venue: "Monterrey", date: "21 Jun (Sun)", team1: "TUN", team2: "JPN", time: "5:00 PM BDT" },
+  { id: "m35", group: "F", stage: "Group", venue: "Dallas", date: "26 Jun (Fri)", team1: "JPN", team2: "SWE", time: "11:00 AM BDT" },
+  { id: "m36", group: "F", stage: "Group", venue: "Kansas City", date: "26 Jun (Fri)", team1: "TUN", team2: "NED", time: "11:00 AM BDT" },
+
+  // GROUP G
+  { id: "m37", group: "G", stage: "Group", venue: "Seattle", date: "16 Jun (Tue)", team1: "BEL", team2: "EGY", time: "9:00 AM BDT" },
+  { id: "m38", group: "G", stage: "Group", venue: "LA", date: "16 Jun (Tue)", team1: "IRN", team2: "NZL", time: "3:00 PM BDT" },
+  { id: "m39", group: "G", stage: "Group", venue: "LA", date: "22 Jun (Mon)", team1: "BEL", team2: "IRN", time: "9:00 AM BDT" },
+  { id: "m40", group: "G", stage: "Group", venue: "Vancouver", date: "22 Jun (Mon)", team1: "NZL", team2: "EGY", time: "3:00 PM BDT" },
+  { id: "m41", group: "G", stage: "Group", venue: "Vancouver", date: "27 Jun (Sat)", team1: "EGY", team2: "IRN", time: "5:00 PM BDT" },
+  { id: "m42", group: "G", stage: "Group", venue: "Seattle", date: "27 Jun (Sat)", team1: "NZL", team2: "BEL", time: "5:00 PM BDT" },
+
+  // GROUP H
+  { id: "m43", group: "H", stage: "Group", venue: "Atlanta", date: "16 Jun (Tue)", team1: "ESP", team2: "CPV", time: "6:00 AM BDT" }, 
+  { id: "m44", group: "H", stage: "Group", venue: "Miami", date: "16 Jun (Tue)", team1: "KSA", team2: "URU", time: "9:00 AM BDT" },
+  { id: "m45", group: "H", stage: "Group", venue: "Atlanta", date: "22 Jun (Mon)", team1: "ESP", team2: "KSA", time: "5:00 AM BDT" }, 
+  { id: "m46", group: "H", stage: "Group", venue: "Miami", date: "22 Jun (Mon)", team1: "URU", team2: "CPV", time: "9:00 AM BDT" },
+  { id: "m47", group: "H", stage: "Group", venue: "Houston", date: "27 Jun (Sat)", team1: "CPV", team2: "KSA", time: "12:00 PM BDT" },
+  { id: "m48", group: "H", stage: "Group", venue: "Guadalajara", date: "27 Jun (Sat)", team1: "URU", team2: "ESP", time: "1:00 PM BDT" },
+
+  // GROUP I
+  { id: "m49", group: "I", stage: "Group", venue: "NY/NJ", date: "17 Jun (Wed)", team1: "FRA", team2: "SEN", time: "6:00 AM BDT" },
+  { id: "m50", group: "I", stage: "Group", venue: "Boston", date: "17 Jun (Wed)", team1: "IRQ", team2: "NOR", time: "9:00 AM BDT" },
+  { id: "m51", group: "I", stage: "Group", venue: "Philly", date: "23 Jun (Tue)", team1: "FRA", team2: "IRQ", time: "8:00 AM BDT" },
+  { id: "m52", group: "I", stage: "Group", venue: "NY/NJ", date: "23 Jun (Tue)", team1: "NOR", team2: "SEN", time: "11:00 AM BDT" },
+  { id: "m53", group: "I", stage: "Group", venue: "Toronto", date: "27 Jun (Sat)", team1: "SEN", team2: "IRQ", time: "6:00 AM BDT" },
+  { id: "m54", group: "I", stage: "Group", venue: "Boston", date: "27 Jun (Sat)", team1: "NOR", team2: "FRA", time: "6:00 AM BDT" },
+
+  // GROUP J
+  { id: "m55", group: "J", stage: "Group", venue: "Kansas City", date: "17 Jun (Wed)", team1: "ARG", team2: "ALG", time: "1:00 PM BDT" },
+  { id: "m56", group: "J", stage: "Group", venue: "San Fran", date: "17 Jun (Wed)", team1: "AUT", team2: "JOR", time: "6:00 PM BDT" },
+  { id: "m57", group: "J", stage: "Group", venue: "Dallas", date: "23 Jun (Tue)", team1: "ARG", team2: "AUT", time: "5:00 AM BDT" },
+  { id: "m58", group: "J", stage: "Group", venue: "San Fran", date: "23 Jun (Tue)", team1: "JOR", team2: "ALG", time: "5:00 PM BDT" },
+  { id: "m59", group: "J", stage: "Group", venue: "Kansas City", date: "28 Jun (Sun)", team1: "ALG", team2: "AUT", time: "2:00 PM BDT" },
+  { id: "m60", group: "J", stage: "Group", venue: "Dallas", date: "28 Jun (Sun)", team1: "JOR", team2: "ARG", time: "2:00 PM BDT" },
+
+  // GROUP K
+  { id: "m61", group: "K", stage: "Group", venue: "Houston", date: "18 Jun (Thu)", team1: "POR", team2: "COD", time: "5:00 AM BDT" },
+  { id: "m62", group: "K", stage: "Group", venue: "Mexico City", date: "18 Jun (Thu)", team1: "UZB", team2: "COL", time: "3:00 PM BDT" },
+  { id: "m63", group: "K", stage: "Group", venue: "Houston", date: "24 Jun (Wed)", team1: "POR", team2: "UZB", time: "5:00 AM BDT" },
+  { id: "m64", group: "K", stage: "Group", venue: "Guadalajara", date: "24 Jun (Wed)", team1: "COL", team2: "COD", time: "3:00 PM BDT" },
+  { id: "m65", group: "K", stage: "Group", venue: "Atlanta", date: "28 Jun (Sun)", team1: "COD", team2: "UZB", time: "10:30 AM BDT" },
+  { id: "m66", group: "K", stage: "Group", venue: "Miami", date: "28 Jun (Sun)", team1: "COL", team2: "POR", time: "10:30 AM BDT" },
+
+  // GROUP L
+  { id: "m67", group: "L", stage: "Group", venue: "Dallas", date: "18 Jun (Thu)", team1: "ENG", team2: "CRO", time: "8:00 AM BDT" },
+  { id: "m68", group: "L", stage: "Group", venue: "Toronto", date: "18 Jun (Thu)", team1: "GHA", team2: "PAN", time: "10:00 AM BDT" },
+  { id: "m69", group: "L", stage: "Group", venue: "Boston", date: "24 Jun (Wed)", team1: "ENG", team2: "GHA", time: "7:00 AM BDT" },
+  { id: "m70", group: "L", stage: "Group", venue: "Toronto", date: "24 Jun (Wed)", team1: "PAN", team2: "CRO", time: "10:00 AM BDT" },
+  { id: "m71", group: "L", stage: "Group", venue: "Philly", date: "27 Jun (Sat)", team1: "CRO", team2: "GHA", time: "1:00 PM BDT" },
+  { id: "m72", group: "L", stage: "Group", venue: "NY/NJ", date: "27 Jun (Sat)", team1: "PAN", team2: "ENG", time: "1:00 PM BDT" },
 ];
 
 export const knockoutMatches: Match[] = [

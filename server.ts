@@ -179,9 +179,9 @@ app.get("/api/live", async (req, res) => {
   }
 });
 
-app.get("/api/team/:id", async (req, res) => {
+app.get("/api/team", async (req, res) => {
   try {
-    const { id } = req.params;
+    const id = req.query.id;
     const response = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/teams/${id}/roster`);
     if (!response.ok) throw new Error("Failed to fetch roster");
     const data = await response.json();
@@ -192,9 +192,9 @@ app.get("/api/team/:id", async (req, res) => {
   }
 });
 
-app.get("/api/match-details/:id", async (req, res) => {
+app.get("/api/match-details", async (req, res) => {
   try {
-    const { id } = req.params;
+    const id = req.query.id;
     const response = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/summary?event=${id}`);
     if (!response.ok) throw new Error("Failed to fetch match summary");
     const data = await response.json();
