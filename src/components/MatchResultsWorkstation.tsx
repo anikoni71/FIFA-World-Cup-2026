@@ -402,7 +402,8 @@ export default function MatchResultsWorkstation() {
       </div>
 
       <MatchDetailsModal 
-        matchId={selectedMatchId} 
+        match={matches.find(m => m.id === selectedMatchId) || null} 
+        isOpen={selectedMatchId !== null} 
         onClose={() => setSelectedMatchId(null)} 
       />
     </div>

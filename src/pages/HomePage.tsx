@@ -303,7 +303,7 @@ export default function HomePage() {
               <Globe className="!size-5 sm:!size-4" /> <span className="font-bold sm:font-medium">Groups</span>
             </TabsTrigger>
             <TabsTrigger value="schedule-wk" className="flex-col gap-1 rounded-[10px] sm:flex-row sm:rounded-md text-[10px] sm:text-sm h-full sm:h-auto data-active:text-primary group-data-[variant=default]/tabs-list:data-active:bg-primary/10 sm:group-data-[variant=default]/tabs-list:data-active:bg-background sm:group-data-[variant=default]/tabs-list:data-active:text-foreground outline-none">
-              <CalendarDays className="!size-5 sm:!size-4" /> <span className="font-bold sm:font-medium">Schedule Wk</span>
+              <CalendarDays className="!size-5 sm:!size-4" /> <span className="font-bold sm:font-medium text-center leading-tight">Match Results<br className="sm:hidden" />& Schedule</span>
             </TabsTrigger>
             <TabsTrigger value="stats" className="flex-col gap-1 rounded-[10px] sm:flex-row sm:rounded-md text-[10px] sm:text-sm h-full sm:h-auto data-active:text-primary group-data-[variant=default]/tabs-list:data-active:bg-primary/10 sm:group-data-[variant=default]/tabs-list:data-active:bg-background sm:group-data-[variant=default]/tabs-list:data-active:text-foreground outline-none">
               <LineChart className="!size-5 sm:!size-4" /> <span className="font-bold sm:font-medium">Stats</span>

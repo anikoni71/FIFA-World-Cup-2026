@@ -194,14 +194,21 @@ app.get("/api/team", async (req, res) => {
 
 app.get("/api/match-details", async (req, res) => {
   try {
-    const id = req.query.id;
+    const id = req.query.id as string;
+    
+    if (!id || !/^\d+$/.test(id)) {
+      return res.status(404).json({ error: "Not a valid external event ID" });
+    }
+
     const response = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/summary?event=${id}`);
-    if (!response.ok) throw new Error("Failed to fetch match summary");
+    if (!response.ok) {
+      return res.status(404).json({ error: "Match summary unavailable" });
+    }
     const data = await response.json();
     res.json(data);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Failed to fetch match details" });
+    console.warn("Failed to fetch match details", error);
+    res.status(500).json({ error: "Internal server error during fetch" });
   }
 });
 

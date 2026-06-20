@@ -46,7 +46,8 @@ export default function MatchResultsGrid({ matches }: { matches: any[] }) {
       </div>
 
       <MatchDetailsModal 
-        matchId={selectedMatchId} 
+        match={mappedMatches.find(m => m.id === selectedMatchId) || null} 
+        isOpen={selectedMatchId !== null}
         onClose={() => setSelectedMatchId(null)} 
       />
     </div>
