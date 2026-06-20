@@ -11,6 +11,7 @@ import { StandingsGrid, GroupStandings } from '@/components/StandingsGrid';
 import { StandingsSkeleton } from '@/components/StandingsSkeleton';
 import PlayerStatsWorkstation from '@/components/PlayerStatsWorkstation';
 import AllMatchScheduleWorkstation from '@/components/AllMatchScheduleWorkstation';
+import ScheduleWorkstation from '@/components/ScheduleWorkstation';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Trophy, Search, Globe, Zap, BarChart3, RefreshCw, LineChart, CalendarDays, Bell, BellOff } from 'lucide-react';
@@ -301,8 +302,8 @@ export default function HomePage() {
             <TabsTrigger value="groups" className="flex-col gap-1 rounded-[10px] sm:flex-row sm:rounded-md text-[10px] sm:text-sm h-full sm:h-auto data-active:text-primary group-data-[variant=default]/tabs-list:data-active:bg-primary/10 sm:group-data-[variant=default]/tabs-list:data-active:bg-background sm:group-data-[variant=default]/tabs-list:data-active:text-foreground outline-none">
               <Globe className="!size-5 sm:!size-4" /> <span className="font-bold sm:font-medium">Groups</span>
             </TabsTrigger>
-            <TabsTrigger value="all-matches" className="flex-col gap-1 rounded-[10px] sm:flex-row sm:rounded-md text-[10px] sm:text-sm h-full sm:h-auto data-active:text-primary group-data-[variant=default]/tabs-list:data-active:bg-primary/10 sm:group-data-[variant=default]/tabs-list:data-active:bg-background sm:group-data-[variant=default]/tabs-list:data-active:text-foreground outline-none">
-              <CalendarDays className="!size-5 sm:!size-4" /> <span className="font-bold sm:font-medium">All Matches</span>
+            <TabsTrigger value="schedule-wk" className="flex-col gap-1 rounded-[10px] sm:flex-row sm:rounded-md text-[10px] sm:text-sm h-full sm:h-auto data-active:text-primary group-data-[variant=default]/tabs-list:data-active:bg-primary/10 sm:group-data-[variant=default]/tabs-list:data-active:bg-background sm:group-data-[variant=default]/tabs-list:data-active:text-foreground outline-none">
+              <CalendarDays className="!size-5 sm:!size-4" /> <span className="font-bold sm:font-medium">Schedule Wk</span>
             </TabsTrigger>
             <TabsTrigger value="stats" className="flex-col gap-1 rounded-[10px] sm:flex-row sm:rounded-md text-[10px] sm:text-sm h-full sm:h-auto data-active:text-primary group-data-[variant=default]/tabs-list:data-active:bg-primary/10 sm:group-data-[variant=default]/tabs-list:data-active:bg-background sm:group-data-[variant=default]/tabs-list:data-active:text-foreground outline-none">
               <LineChart className="!size-5 sm:!size-4" /> <span className="font-bold sm:font-medium">Stats</span>
@@ -416,8 +417,8 @@ export default function HomePage() {
           </TabsContent>
 
           {/* ALL MATCHES TAB */}
-          <TabsContent value="all-matches">
-            <AllMatchScheduleWorkstation allMatches={liveData?.allMatches || []} />
+          <TabsContent value="schedule-wk">
+            <ScheduleWorkstation />
           </TabsContent>
 
           {/* STATS TAB */}

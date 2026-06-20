@@ -51,7 +51,7 @@ function PlayerRow({ player, showHeadshot }: { player: Player; showHeadshot: boo
       </span>
 
       {showHeadshot && player.headshot ? (
-        <img src={player.headshot} alt={player.name} className="w-8 h-8 rounded-full object-cover bg-muted ring-1 ring-border" />
+        <img src={player.headshot || undefined} alt={player.name} className="w-8 h-8 rounded-full object-cover bg-muted ring-1 ring-border" />
       ) : (
         <div className="w-8 h-8 rounded-full bg-muted/50 flex items-center justify-center text-[10px] font-bold text-muted-foreground border border-border">
           {player.name.split(' ').map(n => n[0]).join('').slice(0, 2)}

@@ -74,7 +74,7 @@ export default function LiveStandings({ standings }: { standings: GetLiveDataOut
                       <Star className={`w-3 h-3 ${isFav ? 'fill-yellow-500 text-yellow-500' : ''}`} />
                     </button>
                     {team.logo ? (
-                      <img src={team.logo} alt={team.code} className="w-4 h-4 object-contain" />
+                      <img src={team.logo || undefined} alt={team.code} className="w-4 h-4 object-contain" />
                     ) : (
                       <span className="w-4 h-4 bg-muted rounded-full inline-block" />
                     )}

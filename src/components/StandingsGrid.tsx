@@ -59,7 +59,7 @@ export const StandingsGrid: React.FC<StandingsGridProps> = ({ groups }) => {
                   {/* Team Name & Position Indicator */}
                   <div className="col-span-5 flex items-center gap-2 text-left font-medium">
                     <span className={`w-1 h-4 rounded-sm ${isQualificationZone ? 'bg-green-500' : 'bg-transparent'}`} />
-                    <img src={team.flagUrl} alt="" className="w-4 h-3.5 object-cover rounded-sm border border-gray-700" />
+                    <img src={team.flagUrl || undefined} alt="" className="w-4 h-3.5 object-cover rounded-sm border border-gray-700" />
                     <span className="truncate">{team.name}</span>
                   </div>
                   

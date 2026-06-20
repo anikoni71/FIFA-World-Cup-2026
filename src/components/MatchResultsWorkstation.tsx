@@ -472,7 +472,7 @@ function WorkstationMatchCard({ m, onDetail }: { m: Match, onDetail: () => void 
             className="absolute z-50 left-1/2 -translate-x-1/2 bottom-full mb-4 w-48 bg-[#1a202c] border border-white/10 rounded-2xl p-4 shadow-2xl pointer-events-none"
           >
             <div className="flex items-center gap-3 mb-3">
-              <img src={(teamData as any)[hoverTeam].flag || `https://flagcdn.com/w80/${(teamData as any)[hoverTeam].iso}.png`} alt="" className="w-8 h-6 object-cover rounded shadow" />
+              <img src={(teamData as any)[hoverTeam].flag || `https://flagcdn.com/w80/${(teamData as any)[hoverTeam].iso}.png` || undefined} alt="" className="w-8 h-6 object-cover rounded shadow" />
               <div>
                 <div className="text-[10px] font-black text-white leading-none uppercase">{hoverTeam}</div>
                 <div className="text-[8px] text-gray-500 uppercase mt-1">FIFA RANK: {getTeamExtraInfo(hoverTeam).rank}</div>
@@ -503,7 +503,7 @@ function TeamRow({ name, logo, score, code, isWinner, isLive, onHover }: any) {
       onMouseLeave={() => onHover(null)}
     >
       <div className="flex items-center gap-3.5 overflow-hidden">
-        <img src={logo} alt="" className="w-7 h-5 object-cover rounded shadow-[0_4px_10px_rgba(0,0,0,0.5)] border border-white/5 shrink-0" />
+        <img src={logo || undefined} alt="" className="w-7 h-5 object-cover rounded shadow-[0_4px_10px_rgba(0,0,0,0.5)] border border-white/5 shrink-0" />
         <span className={`text-[13px] font-black tracking-tight truncate transition-colors ${isWinner ? 'text-primary' : 'text-gray-300 group-hover/line:text-white'}`}>{name}</span>
       </div>
       <span className={`text-xl font-mono font-black ${isWinner ? 'text-primary' : (isLive ? 'text-white' : 'text-gray-600')}`}>{score}</span>

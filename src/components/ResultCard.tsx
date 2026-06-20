@@ -51,7 +51,7 @@ export function ResultCard({ m, onClick }: { m: Match; onClick?: (id: string) =>
           {isEmoji(m.team1Logo) ? (
             <span className="text-2xl drop-shadow-md">{m.team1Logo}</span>
           ) : (
-            <img src={m.team1Logo} alt={m.team1Code} className="w-8 h-6 object-cover rounded-sm shadow-sm" />
+            <img src={m.team1Logo || undefined} alt={m.team1Code} className="w-8 h-6 object-cover rounded-sm shadow-sm" />
           )}
           <span className="text-xs font-bold uppercase tracking-wider text-slate-200">{m.team1Code}</span>
           
@@ -78,7 +78,7 @@ export function ResultCard({ m, onClick }: { m: Match; onClick?: (id: string) =>
           {isEmoji(m.team2Logo) ? (
             <span className="text-2xl drop-shadow-md">{m.team2Logo}</span>
           ) : (
-            <img src={m.team2Logo} alt={m.team2Code} className="w-8 h-6 object-cover rounded-sm shadow-sm" />
+            <img src={m.team2Logo || undefined} alt={m.team2Code} className="w-8 h-6 object-cover rounded-sm shadow-sm" />
           )}
           <span className="text-xs font-bold uppercase tracking-wider text-slate-200">{m.team2Code}</span>
           

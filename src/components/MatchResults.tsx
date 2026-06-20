@@ -93,7 +93,7 @@ function MatchCard({
         <div className="flex flex-col items-center gap-1 min-w-[50px] sm:min-w-[60px]">
           {t1Flag ? (
             <img
-              src={t1Flag}
+              src={t1Flag || undefined}
               alt={match.team1Code}
               referrerPolicy="no-referrer"
               className="w-7 h-5 sm:w-8 sm:h-5.5 object-cover rounded shadow-sm border border-border/20"
@@ -132,7 +132,7 @@ function MatchCard({
         <div className="flex flex-col items-center gap-1 min-w-[50px] sm:min-w-[60px]">
           {t2Flag ? (
             <img
-              src={t2Flag}
+              src={t2Flag || undefined}
               alt={match.team2Code}
               referrerPolicy="no-referrer"
               className="w-7 h-5 sm:w-8 sm:h-5.5 object-cover rounded shadow-sm border border-border/20"
