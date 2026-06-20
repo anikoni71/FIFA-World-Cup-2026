@@ -17,7 +17,7 @@ interface Props {
   knockoutResults: GetLiveDataOutputType['knockoutResults'];
 }
 
-export default function InteractiveBracket({ standings, knockoutResults }: Props) {
+export default function BracketMatchWorkstation({ standings, knockoutResults }: Props) {
   const { resolveNode, matchWinners } = resolveBracket(standings, knockoutResults);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -115,7 +115,7 @@ export default function InteractiveBracket({ standings, knockoutResults }: Props
   return (
     <div className="w-full bg-[#111318] rounded-xl border border-border/20 p-4 sm:p-6 overflow-hidden relative" ref={containerRef}>
       <div className="flex justify-between items-center mb-6 relative z-20">
-        <h2 className="text-lg font-bold">Automated Bracket — Live from Standings</h2>
+        <h2 className="text-lg font-bold">Bracket Match Workstation</h2>
         <div className="flex items-center gap-3">
           <div className="flex text-[10px] items-center gap-1.5 text-muted-foreground bg-muted/30 px-3 py-1.5 rounded-full">
             <span className="w-1.5 h-1.5 rounded-full border border-current" /> Auto-updates from real-time standings

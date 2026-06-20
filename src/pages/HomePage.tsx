@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { teams, groupMatches, groups } from '@/data/teams';
 import { getLiveData, GetLiveDataOutputType, formatToBDT, getMatchTimestamp } from '@/lib/api';
 import MiniGroup from '@/components/MiniGroup';
-import InteractiveBracket from '@/components/InteractiveBracket';
+import BracketMatchWorkstation from '@/components/BracketMatchWorkstation';
 import MatchResults from '@/components/MatchResults';
 import MatchResultsGrid from '@/components/MatchResultsGrid';
 import { MatchResultsSkeleton } from '@/components/MatchResultsSkeleton';
@@ -404,7 +404,7 @@ export default function HomePage() {
 
           {/* BRACKET TAB */}
           <TabsContent value="bracket">
-            <InteractiveBracket standings={liveData?.standings || []} knockoutResults={liveData?.knockoutResults || []} />
+            <BracketMatchWorkstation standings={liveData?.standings || []} knockoutResults={liveData?.knockoutResults || []} />
           </TabsContent>
 
           {/* SCHEDULE TAB */}
