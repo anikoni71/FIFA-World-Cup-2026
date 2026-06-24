@@ -49,58 +49,50 @@ function getGroupMatchData(g: string, liveAllMatches: GetLiveDataOutputType['all
 }
 
 function LiveMarquee({ liveData, showTicker }: { liveData: GetLiveDataOutputType | null, showTicker: boolean }) {
-  if (!showTicker || !liveData?.allMatches) return null;
+  if (!showTicker) return null;
   
-  const liveMatches = liveData.allMatches.filter(
-    (match) => match.status === 'live' || match.status === 'in' || match.status === 'LIVE' || match.status === 'IN_PROGRESS'
-  );
-
-  const upcomingMatches = liveData.allMatches.filter(
-    (match) => match.status === 'pre' || match.status === 'SCHEDULED' || match.status === 'UPCOMING'
-  );
-
-  const hasLive = liveMatches.length > 0;
-  const tickerItems = hasLive ? liveMatches : upcomingMatches;
-
-  if (tickerItems.length === 0) {
-    return null;
-  }
-
   return (
-    <div className="fixed bottom-16 sm:bottom-0 left-0 w-full bg-slate-950/95 text-white py-2 overflow-hidden border-t border-slate-800 z-40 backdrop-blur-md">
+    <div className="fixed bottom-16 sm:bottom-0 left-0 w-full bg-slate-950/95 text-white py-2.5 overflow-hidden border-t border-slate-800 z-40 backdrop-blur-md shadow-2xl">
       <div className="flex whitespace-nowrap animate-marquee">
-        {tickerItems.map((match) => (
-          <div key={match.id} className="inline-flex items-center mx-6 text-xs font-semibold tracking-wide">
-            {hasLive ? (
-              <>
-                <span className="bg-red-600 text-white text-[9px] px-1.5 py-0.5 rounded font-black mr-2 animate-pulse uppercase">
-                  LIVE
+        {(() => {
+          const liveGames = (liveData?.allMatches || []).filter(
+            (m) => m.status === 'live' || m.status === 'in' || m.status === 'LIVE' || m.status === 'IN_PROGRESS'
+          );
+          const upcomingGames = (liveData?.allMatches || []).filter(
+            (m) => m.status === 'pre' || m.status === 'SCHEDULED' || m.status === 'UPCOMING'
+          );
+
+        if (liveGames.length > 0) {
+          return liveGames.map((match) => (
+            <div key={match.id} className="inline-flex items-center mx-6 text-xs font-semibold tracking-wide">
+              <span className="bg-red-600 text-white text-[9px] px-1.5 py-0.5 rounded font-black mr-2 animate-pulse uppercase">
+                LIVE
+              </span>
+              <span className="text-slate-200">{match.team1Code} {match.team1Score} - {match.team2Score} {match.team2Code}</span>
+              <span className="ml-6 text-slate-800 font-light text-sm">|</span>
+            </div>
+          ));
+        } 
+        
+        if (upcomingGames.length > 0) {
+          return upcomingGames.map((match) => (
+            <div key={match.id} className="inline-flex items-center mx-6 text-xs font-semibold tracking-wide">
+              <span className="bg-blue-600 text-white text-[9px] px-1.5 py-0.5 rounded font-black mr-2 uppercase tracking-wider">
+                SOON
+              </span>
+              <span className="text-slate-200">{match.team1Code || match.team1Name} vs {match.team2Code || match.team2Name}</span>
+              {match.bdt?.time && (
+                <span className="bg-slate-800 text-slate-400 text-[10px] px-1.5 py-0.5 rounded font-medium ml-1">
+                  {match.bdt.time}
                 </span>
-                <span className="text-slate-200">{match.team1Code}</span>
-                <span className="mx-1 text-green-400 font-bold">{match.team1Score}</span>
-                <span className="text-slate-600">-</span>
-                <span className="mx-1 text-green-400 font-bold">{match.team2Score}</span>
-                <span className="mr-2 text-slate-200">{match.team2Code}</span>
-                <span className="text-slate-400 text-[10px] font-normal">({match.minute || "LIVE"}')</span>
-              </>
-            ) : (
-              <>
-                <span className="bg-blue-600 text-white text-[9px] px-1.5 py-0.5 rounded font-black mr-2 uppercase tracking-wider">
-                  SOON
-                </span>
-                <span className="text-slate-200">{match.team1Code}</span>
-                <span className="mx-2 text-slate-500 font-normal text-[11px]">vs</span>
-                <span className="mr-2 text-slate-200">{match.team2Code}</span>
-                {match.bdt?.time && (
-                  <span className="bg-slate-800 text-slate-400 text-[10px] px-1.5 py-0.5 rounded font-medium ml-1">
-                    {match.bdt.time}
-                  </span>
-                )}
-              </>
-            )}
-            <span className="ml-6 text-slate-800 font-light text-sm">|</span>
-          </div>
-        ))}
+              )}
+              <span className="ml-6 text-slate-800 font-light text-sm">|</span>
+            </div>
+          ));
+        }
+
+        return null;
+        })()}
       </div>
     </div>
   );
@@ -179,7 +171,7 @@ export default function HomePage() {
       setLiveData(data);
       setLastRefresh(new Date());
     } catch (e) {
-      console.error('Failed to fetch live data', e);
+      // Silently handle fetch errors during development
     } finally {
       if (isInitial) setLoading(false);
     }

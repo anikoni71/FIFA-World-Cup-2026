@@ -1,150 +1,129 @@
 import React, { useState, useEffect } from 'react';
+import { Activity } from 'lucide-react';
 
-// 1. Perfectly matched dataset from the live tournament feed
-const LIVE_STATS_DATA = {
-  topScorers: [
-    { name: "Jonathan David", team: "Canada", flag: "🇨🇦", count: 3, img: "👤" },
-    { name: "Lionel Messi", team: "Argentina", flag: "🇦🇷", count: 3, img: "👤" },
-    { name: "Cyle Larin", team: "Canada", flag: "🇨🇦", count: 2, img: "👤" },
-    { name: "Kylian Mbappé", team: "France", flag: "🇫🇷", count: 2, img: "👤" },
-    { name: "Vinícius Júnior", team: "Brazil", flag: "🇧🇷", count: 2, img: "👤" }
-  ],
-  topAssists: [
-    { name: "Alexander Isak", team: "Sweden", flag: "🇸🇪", count: 2, img: "👤" },
-    { name: "Brahim Díaz", team: "Morocco", flag: "🇲🇦", count: 2, img: "👤" },
-    { name: "Joshua Kimmich", team: "Germany", flag: "🇩🇪", count: 2, img: "👤" },
-    { name: "Deniz Undav", team: "Germany", flag: "🇩🇪", count: 2, img: "👤" }
-  ],
-  yellowCards: [
-    { name: "Teboho Mokoena", team: "South Africa", flag: "🇿🇦", count: 2, img: "👤" },
-    { name: "Antonee Robinson", team: "USA", flag: "🇺🇸", count: 1, img: "👤" }
-  ],
-  redCards: [
-    { name: "César Montes", Mexico: "Mexico", team: "Mexico", flag: "🇲🇽", count: 1, img: "👤" },
-    { name: "Assim Madibo", Qatar: "Qatar", team: "Qatar", flag: "🇶🇦", count: 1, img: "👤" }
-  ]
-};
+interface PlayerStat {
+  rank: number;
+  name: string;
+  team: string;
+  teamLogo: string;
+  value: string | number;
+  headshot?: string;
+}
+
+interface StatCategory {
+  category: string;
+  categoryLabel: string;
+  players: PlayerStat[];
+}
 
 export default function PlayerStatsWorkstation() {
-  const [stats, setStats] = useState(LIVE_STATS_DATA);
+  const [statsCategories, setStatsCategories] = useState<StatCategory[]>([]);
   const [lastUpdated, setLastUpdated] = useState(new Date().toLocaleTimeString());
+  const [isLoading, setIsLoading] = useState(true);
 
-  // 2. Real-time automatic background synchronization loop
+  const fetchStats = async () => {
+    try {
+      const response = await fetch('/api/live');
+      const data = await response.json();
+      if (data.playerStats) {
+        setStatsCategories(data.playerStats);
+        setLastUpdated(new Date().toLocaleTimeString());
+      }
+    } catch (err) {
+      // Silently handle fetch errors during development
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const interval = setInterval(() => {
-      // Simulate live ticking state change to force layout re-render safely
-      setStats((prev) => ({ ...prev }));
-      setLastUpdated(new Date().toLocaleTimeString());
-      console.log("Stats Workstation: Real-time update completed successfully.");
-    }, 5000); // Auto-refreshes every 5 seconds
-
+    fetchStats();
+    // Real-time automatic background synchronization loop (every 30 seconds as requested)
+    const interval = setInterval(fetchStats, 30000);
     return () => clearInterval(interval);
   }, []);
 
+  const getEmojiForCategory = (catName: string) => {
+    const name = catName.toLowerCase();
+    if (name.includes('goal')) return '⚽';
+    if (name.includes('assist')) return '👟';
+    if (name.includes('yellow')) return '🟨';
+    if (name.includes('red')) return '🟥';
+    return '📊';
+  };
+
+  const getThemeForCategory = (catName: string) => {
+    const name = catName.toLowerCase();
+    if (name.includes('goal')) return { text: 'text-emerald-400', bg: 'bg-emerald-950/40 border-emerald-900/30' };
+    if (name.includes('assist')) return { text: 'text-blue-400', bg: 'bg-blue-950/40 border-blue-900/30' };
+    if (name.includes('yellow')) return { text: 'text-yellow-400', bg: 'bg-yellow-950/40 border-yellow-900/30' };
+    if (name.includes('red')) return { text: 'text-red-400', bg: 'bg-red-950/40 border-red-900/30' };
+    return { text: 'text-gray-400', bg: 'bg-gray-800/40 border-gray-700/30' };
+  };
+
   return (
-    <div className="bg-[#060a0f] text-white p-6 rounded-xl font-sans">
+    <div className="bg-[#060a0f] text-white p-6 rounded-xl font-sans relative">
       {/* Header Pipeline Status */}
       <div className="flex justify-between items-center mb-6 border-b border-gray-800 pb-4">
         <div>
-          <h2 className="text-xl font-bold tracking-wider text-emerald-400 flex items-center gap-2">
-            <span className="animate-pulse h-2 w-2 rounded-full bg-emerald-500"></span>
-            STATS WORKSTATION
+          <h2 className="text-xl font-bold tracking-wider text-[#38bdf8] flex items-center gap-2">
+            <Activity className="w-5 h-5" />
+            LIVE STATS TRACKER
           </h2>
-          <p className="text-xs text-gray-400 mt-1">Live auto-refresh active (5s interval)</p>
+          <p className="text-xs text-gray-400 mt-1 flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+            Auto-refresh active (30s interval)
+          </p>
         </div>
-        <div className="text-xs bg-[#0f172a] px-3 py-1.5 rounded border border-gray-800 text-gray-300 font-mono">
-          Sync Time: {lastUpdated}
+        <div className="text-[10px] bg-[#0f172a] px-3 py-1.5 rounded-lg border border-gray-800 text-slate-300 font-mono tracking-wider uppercase">
+          Synced: {lastUpdated}
         </div>
       </div>
 
-      {/* Synchronized Clean Grid Layout (Removed Most Saves Column) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        
-        {/* Card: Top Scorers */}
-        <div className="bg-[#0b131f] p-4 rounded-lg border border-gray-800">
-          <h3 className="text-sm font-semibold text-gray-400 mb-3 tracking-wide uppercase">⚽ Top Scorers</h3>
-          <div className="space-y-2">
-            {stats.topScorers.map((player, idx) => (
-              <div key={idx} className="flex items-center justify-between bg-[#0f1a2a] p-2 rounded border border-gray-800/50">
-                <div className="flex items-center gap-3">
-                  <span className="text-xl bg-gray-800 h-8 w-8 rounded-full flex items-center justify-center border border-gray-700">{player.img}</span>
-                  <div>
-                    <div className="font-medium text-sm flex items-center gap-1.5">
-                      {player.flag} {player.name}
-                    </div>
-                    <span className="text-[10px] text-gray-400 uppercase tracking-wider">{player.team}</span>
-                  </div>
-                </div>
-                <span className="text-emerald-400 font-mono font-bold text-sm bg-emerald-950/40 px-2.5 py-1 rounded border border-emerald-900/30">{player.count} Goals</span>
-              </div>
-            ))}
-          </div>
+      {isLoading ? (
+        <div className="flex justify-center items-center py-20 text-slate-500 text-sm">
+          <Activity className="w-4 h-4 animate-spin mr-2" /> Pulling real-time stats...
         </div>
-
-        {/* Card: Top Assists */}
-        <div className="bg-[#0b131f] p-4 rounded-lg border border-gray-800">
-          <h3 className="text-sm font-semibold text-gray-400 mb-3 tracking-wide uppercase">🎯 Top Assists</h3>
-          <div className="space-y-2">
-            {stats.topAssists.map((player, idx) => (
-              <div key={idx} className="flex items-center justify-between bg-[#0f1a2a] p-2 rounded border border-gray-800/50">
-                <div className="flex items-center gap-3">
-                  <span className="text-xl bg-gray-800 h-8 w-8 rounded-full flex items-center justify-center border border-gray-700">{player.img}</span>
-                  <div>
-                    <div className="font-medium text-sm flex items-center gap-1.5">
-                      {player.flag} {player.name}
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {statsCategories.filter(c => c.players && c.players.length > 0).slice(0, 4).map((cat, idx) => {
+            const theme = getThemeForCategory(cat.categoryLabel);
+            return (
+              <div key={idx} className="bg-[#0b131f] p-4 rounded-xl border border-gray-800/80 shadow-sm">
+                <h3 className="text-xs font-bold text-gray-400 mb-4 tracking-wider uppercase flex items-center gap-2">
+                  <span>{getEmojiForCategory(cat.categoryLabel)}</span> {cat.categoryLabel}
+                </h3>
+                <div className="space-y-2">
+                  {cat.players.slice(0, 5).map((player, pIdx) => (
+                    <div key={pIdx} className="flex items-center justify-between bg-[#0f1a2a]/80 p-2.5 rounded-lg border border-gray-800/50 hover:bg-[#121f33] transition-colors">
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs font-mono font-bold text-slate-600 w-4 text-center">{player.rank}</span>
+                        {player.headshot ? (
+                          <img src={player.headshot} alt={player.name} className="w-8 h-8 rounded-full object-cover border border-gray-700 bg-gray-900" />
+                        ) : (
+                          <div className="w-8 h-8 rounded-full border border-gray-700 bg-gray-800 flex items-center justify-center text-xs">👤</div>
+                        )}
+                        <div>
+                          <div className="font-semibold text-sm text-gray-200">
+                            {player.name}
+                          </div>
+                          <div className="text-[10px] text-gray-500 uppercase tracking-wider flex items-center gap-1.5 mt-0.5">
+                            {player.teamLogo && <img src={player.teamLogo} alt={player.team} className="w-3 h-3 object-contain" />}
+                            {player.team}
+                          </div>
+                        </div>
+                      </div>
+                      <span className={`font-mono font-bold text-sm px-2.5 py-1 rounded border ${theme.bg} ${theme.text}`}>
+                        {player.value}
+                      </span>
                     </div>
-                    <span className="text-[10px] text-gray-400 uppercase tracking-wider">{player.team}</span>
-                  </div>
+                  ))}
                 </div>
-                <span className="text-blue-400 font-mono font-bold text-sm bg-blue-950/40 px-2.5 py-1 rounded border border-blue-900/30">{player.count} Assists</span>
               </div>
-            ))}
-          </div>
+            );
+          })}
         </div>
-
-        {/* Card: Yellow Cards */}
-        <div className="bg-[#0b131f] p-4 rounded-lg border border-gray-800">
-          <h3 className="text-sm font-semibold text-gray-400 mb-3 tracking-wide uppercase">🟨 Yellow Cards</h3>
-          <div className="space-y-2">
-            {stats.yellowCards.map((player, idx) => (
-              <div key={idx} className="flex items-center justify-between bg-[#0f1a2a] p-2 rounded border border-gray-800/50">
-                <div className="flex items-center gap-3">
-                  <span className="text-xl bg-gray-800 h-8 w-8 rounded-full flex items-center justify-center border border-gray-700">{player.img}</span>
-                  <div>
-                    <div className="font-medium text-sm flex items-center gap-1.5">
-                      {player.flag} {player.name}
-                    </div>
-                    <span className="text-[10px] text-gray-400 uppercase tracking-wider">{player.team}</span>
-                  </div>
-                </div>
-                <span className="text-yellow-400 font-mono font-bold text-sm bg-yellow-950/40 px-3 py-1 rounded border border-yellow-900/30">{player.count}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Card: Red Cards */}
-        <div className="bg-[#0b131f] p-4 rounded-lg border border-gray-800">
-          <h3 className="text-sm font-semibold text-gray-400 mb-3 tracking-wide uppercase">🟥 Red Cards</h3>
-          <div className="space-y-2">
-            {stats.redCards.map((player, idx) => (
-              <div key={idx} className="flex items-center justify-between bg-[#0f1a2a] p-2 rounded border border-gray-800/50">
-                <div className="flex items-center gap-3">
-                  <span className="text-xl bg-gray-800 h-8 w-8 rounded-full flex items-center justify-center border border-gray-700">{player.img}</span>
-                  <div>
-                    <div className="font-medium text-sm flex items-center gap-1.5">
-                      {player.flag} {player.name}
-                    </div>
-                    <span className="text-[10px] text-gray-400 uppercase tracking-wider">{player.team}</span>
-                  </div>
-                </div>
-                <span className="text-red-400 font-mono font-bold text-sm bg-red-950/40 px-3 py-1 rounded border border-red-900/30">{player.count}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-      </div>
+      )}
     </div>
   );
 }

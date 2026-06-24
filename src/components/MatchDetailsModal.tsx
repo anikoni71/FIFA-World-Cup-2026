@@ -1,7 +1,8 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Activity, Clock, MapPin } from 'lucide-react';
+import { X, Activity, Clock, MapPin, FileText } from 'lucide-react';
 import { Match } from './ResultCard';
+import MatchChat from './MatchChat';
 
 interface MatchDetailsModalProps {
   match: Match | null;
@@ -41,97 +42,130 @@ export default function MatchDetailsModal({ match, isOpen, onClose }: MatchDetai
           initial={{ opacity: 0, scale: 0.95, y: 15 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 15 }}
-          className="w-full max-w-2xl overflow-hidden border bg-[#121824] border-[#1e293b] rounded-2xl shadow-2xl text-gray-200"
+          className="w-full max-w-4xl h-[80vh] flex overflow-hidden border bg-[#121824] border-[#1e293b] rounded-2xl shadow-2xl text-gray-200"
         >
-          {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-[#1e293b] bg-[#0b0f19]">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold tracking-widest text-[#38bdf8] uppercase">
-                {match.group ? `Group ${match.group}` : 'Tournament'} • MATCH ANALYSIS
-              </span>
-              {isLive && (
-                <span className="flex items-center gap-1 px-2 py-0.5 text-[10px] font-black bg-red-500/20 text-red-400 border border-red-500/30 rounded animate-pulse">
-                  🔴 LIVE
+          {/* Main Content Area */}
+          <div className="flex-1 flex flex-col h-full overflow-y-auto scrollbar-thin scrollbar-thumb-[#1e293b]">
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[#1e293b] bg-[#0b0f19] sticky top-0 z-10">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold tracking-widest text-[#38bdf8] uppercase">
+                  {match.group ? `Group ${match.group}` : 'Tournament'} • MATCH ANALYSIS
                 </span>
-              )}
+                {isLive && (
+                  <span className="flex items-center gap-1 px-2 py-0.5 text-[10px] font-black bg-red-500/20 text-red-400 border border-red-500/30 rounded animate-pulse">
+                    🔴 LIVE
+                  </span>
+                )}
+              </div>
+              <button 
+                onClick={onClose}
+                className="p-1 text-gray-400 transition rounded-lg hover:bg-slate-800 hover:text-white md:hidden"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
+
+            {/* Teams & Real-Time Scores */}
+            <div className="p-8 bg-[#0b0f19]/40 border-b border-[#1e293b]">
+              <div className="flex items-center justify-between gap-4">
+                {/* Home Team */}
+                <div className="flex flex-col items-center flex-1 text-center">
+                  {isEmoji(match.team1Logo) ? (
+                    <span className="text-5xl mb-3 filter drop-shadow-md">{match.team1Logo || '🏳️'}</span>
+                  ) : (
+                    <img src={match.team1Logo || undefined} alt={match.team1Code} className="w-16 h-12 object-cover rounded shadow mb-3" />
+                  )}
+                  <span className="text-xl font-black tracking-wide text-white uppercase">{match.team1Name || 'Home Team'}</span>
+                  <div className="mt-2 space-y-1 text-xs text-slate-400">
+                    {match.team1Scorers?.map((scorer, i) => <div key={i}>{scorer}</div>)}
+                  </div>
+                </div>
+
+                {/* Verses / Live Score Box */}
+                <div className="flex flex-col items-center justify-center px-6 py-3 bg-[#0b0f19] border border-[#1e293b] rounded-xl min-w-[120px]">
+                  <span className="text-2xl font-black tracking-wider text-white">
+                    {isLive || isFT ? `${match.team1Score} : ${match.team2Score}` : 'VS'}
+                  </span>
+                  <span className="text-[10px] font-bold mt-1.5 px-2 py-0.5 rounded uppercase tracking-wider bg-slate-800 text-gray-400 text-center">
+                    {match.statusDetail || match.status}
+                  </span>
+                </div>
+
+                {/* Away Team */}
+                <div className="flex flex-col items-center flex-1 text-center">
+                  {isEmoji(match.team2Logo) ? (
+                    <span className="text-5xl mb-3 filter drop-shadow-md">{match.team2Logo || '🏳️'}</span>
+                  ) : (
+                    <img src={match.team2Logo || undefined} alt={match.team2Code} className="w-16 h-12 object-cover rounded shadow mb-3" />
+                  )}
+                  <span className="text-xl font-black tracking-wide text-white uppercase">{match.team2Name || 'Away Team'}</span>
+                  <div className="mt-2 space-y-1 text-xs text-slate-400">
+                    {match.team2Scorers?.map((scorer, i) => <div key={i}>{scorer}</div>)}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Analysis Body */}
+            <div className="p-6 space-y-6">
+              {isFT && (
+                <div>
+                  <h4 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#38bdf8] mb-3">
+                    <FileText className="w-4 h-4" /> Match Recap
+                  </h4>
+                  <div className="text-sm leading-relaxed text-gray-300 bg-[#0b0f19] p-4 border border-[#1e293b] rounded-xl space-y-3">
+                    <p>
+                      <strong>{match.team1Name} {match.team1Score} - {match.team2Score} {match.team2Name}</strong>. 
+                      An intense battle that concluded with {homeScoreNum > awayScoreNum ? match.team1Name : awayScoreNum > homeScoreNum ? match.team2Name : 'a hard-fought draw'}.
+                    </p>
+                    <ul className="list-disc pl-5 space-y-1 text-slate-400">
+                      <li>Key moments decided the flow of the game in the second half.</li>
+                      <li>Both teams showed incredible resilience and tactical discipline.</li>
+                      <li>Check back for full video highlights and detailed post-match analysis.</li>
+                    </ul>
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <h4 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#38bdf8] mb-3">
+                  <Activity className="w-4 h-4" /> Tactical Summary
+                </h4>
+                <p className="text-sm leading-relaxed text-gray-300 bg-[#0b0f19] p-4 border border-[#1e293b] rounded-xl">
+                  {generateTacticalSummary()}
+                </p>
+              </div>
+
+              {/* Match Metadata Matrix */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex items-center gap-3 bg-[#0b0f19]/30 border border-[#1e293b]/50 p-3 rounded-xl">
+                  <Clock className="w-4 h-4 text-slate-500" />
+                  <div>
+                    <div className="text-[10px] text-slate-500 uppercase font-bold">Schedule Time</div>
+                    <div className="text-xs text-gray-300 font-medium">{match.date}</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 bg-[#0b0f19]/30 border border-[#1e293b]/50 p-3 rounded-xl">
+                  <MapPin className="w-4 h-4 text-slate-500" />
+                  <div>
+                    <div className="text-[10px] text-slate-500 uppercase font-bold">Stadium Venue</div>
+                    <div className="text-xs text-gray-300 font-medium truncate max-w-[180px]">{match.venue}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Chat Sidebar Area */}
+          <div className="hidden md:flex flex-col w-[320px] shrink-0 border-l border-[#1e293b] relative">
             <button 
               onClick={onClose}
-              className="p-1 text-gray-400 transition rounded-lg hover:bg-slate-800 hover:text-white"
+              className="absolute top-3 right-3 p-1.5 text-gray-400 transition rounded-lg hover:bg-slate-800 hover:text-white z-20"
             >
               <X className="w-5 h-5" />
             </button>
-          </div>
-
-          {/* Teams & Real-Time Scores */}
-          <div className="p-8 bg-[#0b0f19]/40 border-b border-[#1e293b]">
-            <div className="flex items-center justify-between gap-4">
-              {/* Home Team */}
-              <div className="flex flex-col items-center flex-1 text-center">
-                {isEmoji(match.team1Logo) ? (
-                  <span className="text-5xl mb-3 filter drop-shadow-md">{match.team1Logo || '🏳️'}</span>
-                ) : (
-                  <img src={match.team1Logo || undefined} alt={match.team1Code} className="w-16 h-12 object-cover rounded shadow mb-3" />
-                )}
-                <span className="text-xl font-black tracking-wide text-white uppercase">{match.team1Name || 'Home Team'}</span>
-                <div className="mt-2 space-y-1 text-xs text-slate-400">
-                  {match.team1Scorers?.map((scorer, i) => <div key={i}>{scorer}</div>)}
-                </div>
-              </div>
-
-              {/* Verses / Live Score Box */}
-              <div className="flex flex-col items-center justify-center px-6 py-3 bg-[#0b0f19] border border-[#1e293b] rounded-xl min-w-[120px]">
-                <span className="text-2xl font-black tracking-wider text-white">
-                  {isLive || isFT ? `${match.team1Score} : ${match.team2Score}` : 'VS'}
-                </span>
-                <span className="text-[10px] font-bold mt-1.5 px-2 py-0.5 rounded uppercase tracking-wider bg-slate-800 text-gray-400 text-center">
-                  {match.statusDetail || match.status}
-                </span>
-              </div>
-
-              {/* Away Team */}
-              <div className="flex flex-col items-center flex-1 text-center">
-                {isEmoji(match.team2Logo) ? (
-                  <span className="text-5xl mb-3 filter drop-shadow-md">{match.team2Logo || '🏳️'}</span>
-                ) : (
-                  <img src={match.team2Logo || undefined} alt={match.team2Code} className="w-16 h-12 object-cover rounded shadow mb-3" />
-                )}
-                <span className="text-xl font-black tracking-wide text-white uppercase">{match.team2Name || 'Away Team'}</span>
-                <div className="mt-2 space-y-1 text-xs text-slate-400">
-                  {match.team2Scorers?.map((scorer, i) => <div key={i}>{scorer}</div>)}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Analysis Body */}
-          <div className="p-6 space-y-6">
-            <div>
-              <h4 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#38bdf8] mb-3">
-                <Activity className="w-4 h-4" /> Tactical Summary
-              </h4>
-              <p className="text-sm leading-relaxed text-gray-300 bg-[#0b0f19] p-4 border border-[#1e293b] rounded-xl">
-                {generateTacticalSummary()}
-              </p>
-            </div>
-
-            {/* Match Metadata Matrix */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex items-center gap-3 bg-[#0b0f19]/30 border border-[#1e293b]/50 p-3 rounded-xl">
-                <Clock className="w-4 h-4 text-slate-500" />
-                <div>
-                  <div className="text-[10px] text-slate-500 uppercase font-bold">Schedule Time</div>
-                  <div className="text-xs text-gray-300 font-medium">{match.date}</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 bg-[#0b0f19]/30 border border-[#1e293b]/50 p-3 rounded-xl">
-                <MapPin className="w-4 h-4 text-slate-500" />
-                <div>
-                  <div className="text-[10px] text-slate-500 uppercase font-bold">Stadium Venue</div>
-                  <div className="text-xs text-gray-300 font-medium truncate max-w-[180px]">{match.venue}</div>
-                </div>
-              </div>
-            </div>
+            <MatchChat matchId={match.id.toString()} />
           </div>
         </motion.div>
       </div>

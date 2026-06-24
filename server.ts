@@ -42,16 +42,16 @@ const formatToBDT = (timestamp: number) => {
 app.get("/api/live", async (req, res) => {
   try {
     const [standingsRes, scoresRes, koRes, statsRes] = await Promise.all([
-      fetch(standingsUrl),
-      fetch(scoreboardUrl),
+      fetch(standingsUrl).catch(() => null),
+      fetch(scoreboardUrl).catch(() => null),
       fetch(`${scoreboardUrl}?dates=20260628-20260720&limit=100`).catch(() => null),
       fetch(statsUrl).catch(() => null)
     ]);
 
-    const standingsData = await standingsRes.json() as any;
-    const scoresData = await scoresRes.json() as any;
-    const koData = koRes ? await koRes.json() as any : { events: [] };
-    const statsData = statsRes ? await statsRes.json() as any : { categories: [] };
+    const standingsData = standingsRes ? await standingsRes.json().catch(() => ({})) as any : {};
+    const scoresData = scoresRes ? await scoresRes.json().catch(() => ({})) as any : {};
+    const koData = koRes ? await koRes.json().catch(() => ({})) as any : { events: [] };
+    const statsData = statsRes ? await statsRes.json().catch(() => ({})) as any : { categories: [] };
 
     const groupLetters = ['A','B','C','D','E','F','G','H','I','J','K','L'];
     const standings = (standingsData.children || []).map((group: any, idx: number) => {

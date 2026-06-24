@@ -274,21 +274,18 @@ export async function getLiveData(options: LiveDataOptions): Promise<GetLiveData
   let data: any = null;
 
   try {
-    const res = await fetch('/api/live');
-    if (res.ok) {
+    const res = await fetch('/api/live').catch(() => null);
+    if (res && res.ok) {
       const contentType = res.headers.get('content-type');
       if (contentType && contentType.includes('application/json')) {
         data = await res.json();
       } else {
-        const text = await res.text();
-        console.error("Error: Expected JSON, got", contentType, "Body:", text.substring(0, 200));
         hasError = true;
       }
     } else {
       hasError = true;
     }
   } catch (error) {
-    console.error("Error fetching live data from proxy:", error);
     hasError = true;
   }
 
