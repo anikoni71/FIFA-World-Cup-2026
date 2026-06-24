@@ -12,6 +12,7 @@ import { StandingsSkeleton } from '@/components/StandingsSkeleton';
 import PlayerStatsWorkstation from '@/components/PlayerStatsWorkstation';
 import AllMatchScheduleWorkstation from '@/components/AllMatchScheduleWorkstation';
 import ScheduleWorkstation from '@/components/ScheduleWorkstation';
+import TeamCompare from '@/components/TeamCompare';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Trophy, Search, Globe, Zap, BarChart3, RefreshCw, LineChart, CalendarDays, Bell, BellOff } from 'lucide-react';
@@ -47,36 +48,59 @@ function getGroupMatchData(g: string, liveAllMatches: GetLiveDataOutputType['all
     });
 }
 
-function LiveMarquee({ liveData }: { liveData: GetLiveDataOutputType | null }) {
-  if (!liveData?.allMatches) return null;
+function LiveMarquee({ liveData, showTicker }: { liveData: GetLiveDataOutputType | null, showTicker: boolean }) {
+  if (!showTicker || !liveData?.allMatches) return null;
   
-  const liveMatches = liveData.allMatches.filter(m => m.status === 'live' || m.status === 'in');
-  const recentMatches = liveData.allMatches.filter(m => m.status === 'FT' || m.status === 'ft').slice(0, 5);
-  
-  const matchesToDisplay = liveMatches.length > 0 ? liveMatches : recentMatches;
-  if (matchesToDisplay.length === 0) return null;
+  const liveMatches = liveData.allMatches.filter(
+    (match) => match.status === 'live' || match.status === 'in' || match.status === 'LIVE' || match.status === 'IN_PROGRESS'
+  );
+
+  const upcomingMatches = liveData.allMatches.filter(
+    (match) => match.status === 'pre' || match.status === 'SCHEDULED' || match.status === 'UPCOMING'
+  );
+
+  const hasLive = liveMatches.length > 0;
+  const tickerItems = hasLive ? liveMatches : upcomingMatches;
+
+  if (tickerItems.length === 0) {
+    return null;
+  }
 
   return (
-    <div className="fixed bottom-[calc(64px+env(safe-area-inset-bottom))] sm:bottom-0 left-0 right-0 bg-emerald-950/90 border-t border-emerald-900/50 backdrop-blur-md z-40 overflow-hidden py-1.5 flex items-center shadow-[0_-4px_20px_rgba(16,185,129,0.15)]">
-      <div className="bg-emerald-500 text-emerald-950 text-[10px] font-black uppercase px-3 py-0.5 ml-2 mr-2 rounded-sm shrink-0 flex items-center gap-1 z-10 shadow-lg">
-        <span className="w-1.5 h-1.5 rounded-full bg-emerald-950 animate-pulse" /> LIVE
-      </div>
-      <div className="flex-1 overflow-hidden relative flex items-center">
-        <div className="animate-marquee whitespace-nowrap flex items-center gap-8 text-emerald-50 text-xs font-mono font-medium">
-          {[...matchesToDisplay, ...matchesToDisplay, ...matchesToDisplay].map((m, i) => (
-            <span key={`${m.id}-${i}`} className="flex items-center gap-2">
-              <span className="font-bold opacity-80">{m.team1Code}</span>
-              <span className="font-black text-emerald-400 text-sm">{m.team1Score}</span>
-              <span className="opacity-40">-</span>
-              <span className="font-black text-emerald-400 text-sm">{m.team2Score}</span>
-              <span className="font-bold opacity-80">{m.team2Code}</span>
-              <span className="text-[10px] bg-emerald-900/50 px-1.5 py-0.5 rounded text-emerald-300 ml-1">
-                {m.status === 'live' || m.status === 'in' ? `${m.minute || "LIVE"}'` : 'FT'}
-              </span>
-              <span className="mx-2 text-emerald-500/30">|</span>
-            </span>
-          ))}
-        </div>
+    <div className="fixed bottom-16 sm:bottom-0 left-0 w-full bg-slate-950/95 text-white py-2 overflow-hidden border-t border-slate-800 z-40 backdrop-blur-md">
+      <div className="flex whitespace-nowrap animate-marquee">
+        {tickerItems.map((match) => (
+          <div key={match.id} className="inline-flex items-center mx-6 text-xs font-semibold tracking-wide">
+            {hasLive ? (
+              <>
+                <span className="bg-red-600 text-white text-[9px] px-1.5 py-0.5 rounded font-black mr-2 animate-pulse uppercase">
+                  LIVE
+                </span>
+                <span className="text-slate-200">{match.team1Code}</span>
+                <span className="mx-1 text-green-400 font-bold">{match.team1Score}</span>
+                <span className="text-slate-600">-</span>
+                <span className="mx-1 text-green-400 font-bold">{match.team2Score}</span>
+                <span className="mr-2 text-slate-200">{match.team2Code}</span>
+                <span className="text-slate-400 text-[10px] font-normal">({match.minute || "LIVE"}')</span>
+              </>
+            ) : (
+              <>
+                <span className="bg-blue-600 text-white text-[9px] px-1.5 py-0.5 rounded font-black mr-2 uppercase tracking-wider">
+                  SOON
+                </span>
+                <span className="text-slate-200">{match.team1Code}</span>
+                <span className="mx-2 text-slate-500 font-normal text-[11px]">vs</span>
+                <span className="mr-2 text-slate-200">{match.team2Code}</span>
+                {match.bdt?.time && (
+                  <span className="bg-slate-800 text-slate-400 text-[10px] px-1.5 py-0.5 rounded font-medium ml-1">
+                    {match.bdt.time}
+                  </span>
+                )}
+              </>
+            )}
+            <span className="ml-6 text-slate-800 font-light text-sm">|</span>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -88,6 +112,7 @@ export default function HomePage() {
   const [prevStates, setPrevStates] = useState<Record<string, { s1: string, s2: string, status: string }>>({});
   const [loading, setLoading] = useState(true);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [showTicker, setShowTicker] = useState(true);
   const [notifPermission, setNotifPermission] = useState<NotificationPermission>("default");
   const [alertsMuted, setAlertsMuted] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -158,11 +183,11 @@ export default function HomePage() {
     } finally {
       if (isInitial) setLoading(false);
     }
-  }, [prevStates]);
+  }, [prevStates, alertsMuted]);
 
   useEffect(() => {
     fetchLive(true);
-    const interval = setInterval(() => fetchLive(false), 8000); // Poll every 8s for live updates
+    const interval = setInterval(() => fetchLive(false), 60000); // Poll every 60s for live updates
     return () => clearInterval(interval);
   }, [fetchLive]);
 
@@ -174,7 +199,7 @@ export default function HomePage() {
     : [];
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="bg-background text-foreground overflow-y-auto" style={{ minHeight: '-webkit-fill-available', height: '100dvh' }}>
       {/* Header */}
       <div className="bg-gradient-to-r from-secondary/20 via-primary/15 to-secondary/20 border-b border-border sticky top-0 z-40 backdrop-blur supports-[backdrop-filter]:bg-background/80 pt-[env(safe-area-inset-top)]">
         <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4 space-y-3">
@@ -189,6 +214,28 @@ export default function HomePage() {
               </div>
             </div>
             <div className="flex items-center gap-3">
+              {/* Ticker Toggle */}
+              <div className="hidden sm:flex items-center space-x-2.5 bg-slate-800/40 px-3 py-1.5 rounded-full border border-slate-700/60 transition-all">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-300">
+                  Ticker
+                </span>
+                <button
+                  onClick={() => setShowTicker(!showTicker)}
+                  className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200 focus:outline-none ${
+                    showTicker ? 'bg-green-500' : 'bg-slate-600'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform duration-200 ${
+                      showTicker ? 'translate-x-5' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+                <span className="text-[10px] font-bold text-slate-400 w-6">
+                  {showTicker ? 'ON' : 'OFF'}
+                </span>
+              </div>
+
               {/* Strategic Placement: Alerts Toggle */}
               <div className="flex items-center gap-2 bg-background/40 border border-border px-3 py-1.5 rounded-full shadow-sm">
                 <AnimatePresence mode="wait">
@@ -242,6 +289,13 @@ export default function HomePage() {
                   />
                 </button>
               </div>
+
+              <TeamCompare trigger={
+                <Button variant="outline" size="sm" className="shrink-0 h-9 rounded-full px-4 border-primary/20 hover:bg-primary/5">
+                  <BarChart3 className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline ml-1 font-bold">Compare</span>
+                </Button>
+              } />
 
               <Button variant="outline" size="sm" onClick={() => fetchLive(true)} disabled={loading} className="shrink-0 h-9 rounded-full px-4 border-primary/20 hover:bg-primary/5">
                 <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
@@ -443,7 +497,7 @@ export default function HomePage() {
         </Tabs>
       </div>
 
-      <LiveMarquee liveData={liveData} />
+      <LiveMarquee liveData={liveData} showTicker={showTicker} />
     </div>
   );
 }

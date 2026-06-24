@@ -129,18 +129,23 @@ export async function getTeamDetails(teamId: string, teamCode: string, allMatche
     try {
       const res = await fetch(`/api/team?id=${teamId}`);
       if (res.ok) {
-        const data = await res.json();
-        squad = (data.athletes || []).flatMap((group: any) => 
-          (group.items || []).map((player: any) => ({
-            id: player.id,
-            name: player.displayName,
-            position: player.position?.displayName || group.name,
-            age: player.age,
-            club: player.location,
-            role: group.name,
-            number: player.jersey
-          }))
-        );
+        const contentType = res.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          const data = await res.json();
+          squad = (data.athletes || []).flatMap((group: any) => 
+            (group.items || []).map((player: any) => ({
+              id: player.id,
+              name: player.displayName,
+              position: player.position?.displayName || group.name,
+              age: player.age,
+              club: player.location,
+              role: group.name,
+              number: player.jersey
+            }))
+          );
+        } else {
+          console.error("Error: Expected JSON, got", contentType);
+        }
       }
     } catch (e) {
       console.error("Error fetching squad:", e);
@@ -271,7 +276,14 @@ export async function getLiveData(options: LiveDataOptions): Promise<GetLiveData
   try {
     const res = await fetch('/api/live');
     if (res.ok) {
-      data = await res.json();
+      const contentType = res.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        data = await res.json();
+      } else {
+        const text = await res.text();
+        console.error("Error: Expected JSON, got", contentType, "Body:", text.substring(0, 200));
+        hasError = true;
+      }
     } else {
       hasError = true;
     }
@@ -284,12 +296,12 @@ export async function getLiveData(options: LiveDataOptions): Promise<GetLiveData
   const standings = data?.standings || [];
   const todayMatches = (data?.todayMatches || []).map((m: any) => ({
     ...m,
-    bdt: m.bdt || formatToBDT(m.startTime ? new Date(m.startTime).getTime() : Infinity)
+    bdt: m.bdt || formatToBDT(m.startTime ? new Date(m.startTime.replace(/ /g, 'T')).getTime() : Infinity)
   }));
   const knockoutResults = (data?.knockoutResults || []).map((m: any) => ({
     ...m,
-    bdt: m.bdt || formatToBDT(m.startTime ? new Date(m.startTime).getTime() : 
-                 (m.date ? new Date(m.date).getTime() : Infinity))
+    bdt: m.bdt || formatToBDT(m.startTime ? new Date(m.startTime.replace(/ /g, 'T')).getTime() : 
+                 (m.date ? new Date(m.date.replace(/ /g, 'T')).getTime() : Infinity))
   }));
   let playerStats = data?.playerStats || [];
 

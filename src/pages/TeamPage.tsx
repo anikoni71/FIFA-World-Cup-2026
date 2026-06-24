@@ -5,9 +5,11 @@ import { ArrowLeft, MapPin, Calendar, Clock, ChevronDown, ChevronUp, History, Tr
 import { Button } from '@/components/ui/button';
 import TeamCompare from '@/components/TeamCompare';
 import TeamFormChart from '@/components/TeamFormChart';
+import TeamStatsChart from '@/components/TeamStatsChart';
 import { getLiveData, GetLiveDataOutputType, getTeamDetails, TeamDetails } from '@/lib/api';
 import { motion, AnimatePresence } from 'motion/react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { BarChart3 } from 'lucide-react';
 
 function TeamSquad({ squad }: { squad: TeamDetails['squad'] }) {
   const grouped = useMemo(() => {
@@ -231,7 +233,7 @@ export default function TeamPage() {
   const groupTeams = Object.values(teams).filter(t => t.group === team.group && t.code !== team.code);
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="bg-background text-foreground overflow-y-auto" style={{ minHeight: '-webkit-fill-available', height: '100dvh' }}>
       {/* Header */}
       <div className="bg-gradient-to-br from-primary/15 via-secondary/10 to-background border-b border-border sticky top-0 z-40 backdrop-blur supports-[backdrop-filter]:bg-background/80 pt-[env(safe-area-inset-top)]">
         <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
@@ -342,6 +344,27 @@ export default function TeamPage() {
                     groupTeams={groupTeams} 
                     recentForm={teamDetails?.recentForm || []} 
                   />
+                  
+                  <div className="pt-4 border-t border-border/50">
+                    <h2 className="text-base sm:text-lg font-bold mb-4 flex items-center gap-2"><BarChart3 className="w-5 h-5 text-primary"/> Team Statistics</h2>
+                    <TeamStatsChart 
+                      goalDistribution={[
+                        { minuteRange: '0-15', goals: 2 },
+                        { minuteRange: '16-30', goals: 1 },
+                        { minuteRange: '31-45', goals: 4 },
+                        { minuteRange: '46-60', goals: 3 },
+                        { minuteRange: '61-75', goals: 5 },
+                        { minuteRange: '76-90+', goals: 7 }
+                      ]} 
+                      possessionStats={[
+                        { match: 'Match 1', possession: 55 },
+                        { match: 'Match 2', possession: 48 },
+                        { match: 'Match 3', possession: 62 },
+                        { match: 'Match 4', possession: 51 },
+                        { match: 'Match 5', possession: 58 }
+                      ]}
+                    />
+                  </div>
                 </div>
               ) : (
                 <div className="bg-card border border-border rounded-xl p-6 h-[200px] animate-pulse flex items-center justify-center">

@@ -200,6 +200,11 @@ export default function ScheduleWorkstation() {
            throw new Error('Fallback to simulation');
         }
         
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+           throw new Error('Received non-JSON from /api/live');
+        }
+        
         const liveData = await response.json(); 
         
         if (mounted && liveData?.todayMatches && liveData.todayMatches.length > 0) {
@@ -286,7 +291,7 @@ export default function ScheduleWorkstation() {
   const upcomingCount = matches.filter(m => m.status !== 'FT' && m.date !== 'LIVE').length;
 
   return (
-    <div className="bg-[#0b0f19] text-gray-200 font-sans min-h-screen p-4 md:p-8 rounded-2xl w-full mx-auto">
+    <div className="bg-[#0b0f19] text-gray-200 font-sans p-4 md:p-8 rounded-2xl w-full mx-auto overflow-y-auto" style={{ minHeight: '-webkit-fill-available', height: '100dvh' }}>
       <div className="max-w-7xl mx-auto">
         
         {/* Header Section */}

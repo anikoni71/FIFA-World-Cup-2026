@@ -121,7 +121,8 @@ export default function MatchResultsWorkstation() {
   // Timezone Engine (BST / UTC+6)
   const formatToBDT = (dateInput: string) => {
     try {
-      const date = new Date(dateInput);
+      const parsedDate = dateInput.replace(/ /g, 'T');
+      const date = new Date(parsedDate);
       return new Intl.DateTimeFormat('en-US', {
         timeZone: 'Asia/Dhaka',
         hour: '2-digit',
@@ -174,7 +175,7 @@ export default function MatchResultsWorkstation() {
       setMatches(mapped.sort((a, b) => {
         if (a.date === "LIVE") return -1;
         if (b.date === "LIVE") return 1;
-        return new Date(b.date).getTime() - new Date(a.date).getTime();
+        return new Date(b.date.replace(/ /g, 'T')).getTime() - new Date(a.date.replace(/ /g, 'T')).getTime();
       }));
       setLastSync(new Date().toLocaleTimeString('en-US', { hour12: false }));
       setLoading(false);
@@ -256,7 +257,7 @@ export default function MatchResultsWorkstation() {
   }
 
   return (
-    <div className="w-full min-h-screen bg-[#060a0f] text-gray-100 font-sans selection:bg-primary/30 pb-20">
+    <div className="w-full bg-[#060a0f] text-gray-100 font-sans selection:bg-primary/30 pb-20 overflow-y-auto" style={{ minHeight: '-webkit-fill-available', height: '100dvh' }}>
       <div className="max-w-[1400px] mx-auto p-4 md:p-10 space-y-12">
         
         {/* WORKSTATION COMMAND HEADER */}
